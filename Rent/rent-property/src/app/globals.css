@@ -102,6 +102,7 @@ body {
   }
 }
 
+
 .animate-slide-in-right {
   animation: slide-in-right 1.5s ease-out;
 }
