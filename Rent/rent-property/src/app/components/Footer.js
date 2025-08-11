@@ -48,6 +48,14 @@ export default function Footer() {
             <ul className="space-y-2 lg:space-y-3">
               <li>
                 <button
+                  onClick={() => scrollToSection('home')}
+                  className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base"
+                >
+                  Home
+                </button>
+              </li>
+              <li>
+                <button
                   onClick={() => scrollToSection('about')}
                   className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base"
                 >
@@ -70,6 +78,7 @@ export default function Footer() {
                   Contact
                 </button>
               </li>
+
             </ul>
           </div>
 

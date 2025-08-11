@@ -63,12 +63,7 @@ export default function Header() {
               >
                 Explore Properties
               </button>
-              <button
-                onClick={() => scrollToSection('about')}
-                className="hover:text-amber-500 transition-colors"
-              >
-                About
-              </button>
+
               <div className="flex items-center space-x-3 ml-4">
                 <FaFacebookF className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
                 <FaInstagram className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
@@ -87,7 +82,7 @@ export default function Header() {
             <div className="flex items-center space-x-3">
               <FaFacebookF className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
               <FaInstagram className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
-              <FaYoutube className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" /> {/* Added */}
+              <FaYoutube className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
               <FaTiktok className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
             </div>
           </div>
@@ -123,6 +118,12 @@ export default function Header() {
               >
                 Contact
               </button>
+              <button
+                onClick={() => scrollToSection('about')}
+                className="text-slate-300 hover:text-amber-500 transition-colors font-medium"
+              >
+                About
+              </button>
             </nav>
           </div>
 
@@ -146,35 +147,12 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
+        {/* Mobile Menu Dropdown - Swapped Sections */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-slate-900/98 backdrop-blur-sm border-t border-slate-800">
             <div className="container mx-auto px-4 py-4">
-              {/* Contact Info Section */}
-              <div className="border-b border-slate-700 pb-4 mb-4">
-                <h4 className="text-white font-semibold mb-3 text-sm">
-                  Contact Information
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                    <span className="text-slate-300">
-                      Wah Cantt, Islamabad, Pakistan
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Mail className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                    <span className="text-slate-300">info@itextremes.com</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
-                    <span className="text-slate-300">+92-300-1234567</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Navigation Links */}
-              <nav className="space-y-3">
+              {/* Navigation Links (now first) */}
+              <nav className="space-y-3 border-b border-slate-700 pb-4 mb-4">
                 <button
                   onClick={() => scrollToSection('home')}
                   className="block w-full text-left text-white hover:text-amber-500 transition-colors font-medium py-2"
@@ -193,26 +171,34 @@ export default function Header() {
                 >
                   Contact
                 </button>
+                <button
+                  onClick={() => scrollToSection('about')}
+                  className="block w-full text-left text-slate-300 hover:text-amber-500 transition-colors font-medium py-2"
+                >
+                  About
+                </button>
               </nav>
 
-              {/* Quick Links Section */}
-              <div className="border-t border-slate-700 pt-4 mt-4">
+              {/* Contact Info (now second) */}
+              <div className="pt-4 mt-2">
                 <h4 className="text-white font-semibold mb-3 text-sm">
-                  Quick Links
+                  Contact Information
                 </h4>
                 <div className="space-y-2">
-                  <button
-                    onClick={() => scrollToSection('about')}
-                    className="block w-full text-left text-slate-300 hover:text-amber-500 transition-colors text-sm py-1"
-                  >
-                    Explore Properties
-                  </button>
-                  <button
-                    onClick={() => scrollToSection('about')}
-                    className="block w-full text-left text-slate-300 hover:text-amber-500 transition-colors text-sm py-1"
-                  >
-                    About
-                  </button>
+                  <div className="flex items-center space-x-2 text-sm">
+                    <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    <span className="text-slate-300">
+                      Wah Cantt, Islamabad, Pakistan
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm">
+                    <Mail className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    <span className="text-slate-300">info@itextremes.com</span>
+                  </div>
+                  <div className="flex items-center space-x-2 text-sm">
+                    <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                    <span className="text-slate-300">+92-300-1234567</span>
+                  </div>
                 </div>
               </div>
 

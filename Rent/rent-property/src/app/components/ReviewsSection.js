@@ -35,7 +35,8 @@ function ClientReviewsSlider() {
           className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentReview ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
         >
           <Card className="border-slate-200 h-full">
-            <CardContent className="h-full flex flex-col">
+            {/* Added bottom padding so dots don't crowd the name on small screens */}
+            <CardContent className="h-full flex flex-col pb-14 md:pb-8">
               <div className="flex items-center mb-4">
                 {[...Array(review.rating)].map((_, i) => (
                   <Star key={i} className="w-5 h-5 fill-amber-500 text-amber-500" />
@@ -44,13 +45,14 @@ function ClientReviewsSlider() {
               <p className="text-black text-lg md:text-xl mb-6 italic flex-grow">
                 "{review.content}"
               </p>
-              <div className="flex items-center">
-                <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center mr-4">
+              {/* Increased gap between avatar and text on small devices */}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
                   <span className="text-black font-bold">
                     {review.name.split(' ').map(n => n[0]).join('')}
                   </span>
                 </div>
-                <div>
+                <div className="leading-tight sm:leading-snug">
                   <h4 className="text-black font-semibold">{review.name}</h4>
                   <p className="text-black text-sm">{review.role}</p>
                 </div>
@@ -60,7 +62,8 @@ function ClientReviewsSlider() {
         </div>
       ))}
 
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+      {/* Dots moved a bit lower on mobile, standard on sm+ */}
+      <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
         {reviews.map((_, index) => (
           <button
             key={index}
