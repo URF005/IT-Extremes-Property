@@ -188,7 +188,7 @@ export default function Header() {
                   <div className="flex items-center space-x-2 text-sm">
                     <MapPin className="w-4 h-4 text-amber-500 flex-shrink-0" />
                     <span className="text-slate-300">
-                      Wah Cantt, Islamabad, Pakistan
+                      Islamabad, Pakistan
                     </span>
                   </div>
                   <div className="flex items-center space-x-2 text-sm">

@@ -17,12 +17,7 @@ export default function AboutSection() {
               </h2>
               <div className="w-16 h-0.5 bg-amber-500 mb-6 lg:mb-8"></div>
               <p className="text-slate-300 text-base lg:text-lg leading-relaxed mb-4 lg:mb-6">
-                IT Extremes is Pakistan's premier rental property platform, connecting tenants with quality accommodations
-                across major cities including Islamabad, Karachi, Lahore, and Wah Cantt.
-              </p>
-              <p className="text-slate-300 text-base lg:text-lg leading-relaxed mb-6 lg:mb-8">
-                From modern apartments to comfortable rooms and spacious houses, we offer verified properties
-                that meet the highest standards of comfort, safety, and affordability.
+               IT Extremes is Pakistan's leading rental property platform, helping tenants find quality accommodations in Islamabad and its sectors like Multi Gardens B-17. We connect you with the best homes and commercial spaces across the city for a smooth rental experience.
               </p>
             </div>
           </div>

@@ -32,7 +32,7 @@ export default function PropertiesSection() {
           </h2>
           <div className="w-16 h-0.5 bg-amber-500 mx-auto mb-6 lg:mb-8"></div>
           <p className="text-slate-300 text-base lg:text-lg max-w-2xl mx-auto px-4">
-            Explore our handpicked selection of premium rental properties across Pakistan's major cities
+            Discover curated rental properties in B-17 Islamabad, featuring premium homes and apartments in Multi Gardens and surrounding areas
           </p>
         </div>
 

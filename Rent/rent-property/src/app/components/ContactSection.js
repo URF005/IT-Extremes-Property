@@ -113,7 +113,7 @@ export default function ContactSection() {
               </div>
               <div>
                 <h3 className="text-white font-semibold">Address</h3>
-                <p className="text-slate-300">Wah Cantt, Punjab, Pakistan</p>
+                <p className="text-slate-300">Islamabad, Pakistan</p>
               </div>
             </div>
           </div>

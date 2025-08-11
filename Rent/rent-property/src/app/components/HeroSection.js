@@ -290,7 +290,7 @@ export default function HeroSection() {
           </h1>
           <div className="w-24 h-0.5 bg-amber-500 mx-auto animate-fade-in-up animation-delay-200"></div>
           <p className="text-lg sm:text-xl md:text-2xl text-slate-200 max-w-2xl mx-auto px-4 leading-relaxed animate-fade-in-up animation-delay-400">
-            Discover exceptional rental properties across Pakistan's major cities - from luxury apartments to comfortable rooms
+            Discover premium rentals in Islamabad - from luxury apartments to comfortable homes in B-17 Islamabad
           </p>
           <button
             onClick={() => scrollToSection('properties')}

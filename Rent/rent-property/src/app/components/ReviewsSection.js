@@ -16,10 +16,30 @@ function CardContent({ children, className = '' }) {
 function ClientReviewsSlider() {
   const [currentReview, setCurrentReview] = useState(0)
   const reviews = [
-    { name: "Ahmed Hassan", role: "Software Engineer", content: "IT Extremes helped me find the perfect apartment in Islamabad. Their service is exceptional and the property quality is outstanding.", rating: 3 },
-    { name: "Fatima Khan", role: "Marketing Manager", content: "Found my dream house in Karachi through IT Extremes. The entire process was smooth and professional. Highly recommended!", rating: 5 },
-    { name: "Usman Malik", role: "Business Owner", content: "The team at IT Extremes went above and beyond to find me a commercial space that fit all my requirements. Excellent service!", rating: 5 },
-    { name: "Ayesha Raza", role: "University Professor", content: "As an expat moving to Pakistan, IT Extremes made finding a home so easy. They understood my needs perfectly.", rating: 4 }
+    {
+      name: "Ahmed Hassan",
+      role: "Software Engineer",
+      content: "Found my ideal apartment at Capital Square through IT Extremes. The modern amenities and prime location are perfect.",
+      rating: 5
+    },
+    {
+      name: "Fatima Khan",
+      role: "Marketing Manager",
+      content: "IT Extremes secured me a beautiful house in Block B. Their knowledge of Islamabad's sectors is impressive.",
+      rating: 5
+    },
+    {
+      name: "Usman Malik",
+      role: "Business Owner",
+      content: "The team found me a premium office space in Block C within my budget. Exceptional service for professionals!",
+      rating: 4
+    },
+    {
+      name: "Ayesha Raza",
+      role: "University Professor",
+      content: "As a newcomer to Islamabad, IT Extremes perfectly matched me with Capital Square's secure community.",
+      rating: 5
+    }
   ]
 
   useEffect(() => {

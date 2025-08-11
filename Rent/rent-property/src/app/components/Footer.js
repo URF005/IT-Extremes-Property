@@ -32,7 +32,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-slate-400 mb-4 lg:mb-6 text-sm sm:text-base">
-              Pakistan's leading rental property platform, connecting tenants with premium accommodations across major cities.
+              Discover premium rentals in B-17 Islamabad, featuring handpicked homes in Multi Gardens and nearby sectors.
             </p>
             <div className="flex space-x-4">
               <FaFacebookF className="w-5 h-5 text-slate-400 hover:text-amber-500 cursor-pointer transition-colors" />
