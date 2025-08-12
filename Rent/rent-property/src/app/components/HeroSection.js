@@ -4,10 +4,12 @@ import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, X as CloseIcon } from 'lucide-react'
 import { Playfair_Display } from 'next/font/google'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
 
 const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
 
-// Simple floating alert
+/* ----------------------------- Floating Alert ----------------------------- */
 function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We’ll contact you shortly.', onClose }) {
   return (
     <div
@@ -29,7 +31,7 @@ function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We�
   )
 }
 
-// Button
+/* --------------------------------- Button -------------------------------- */
 function Button({ children, className = '', size = 'md', variant = 'default', onClick, ...props }) {
   const base = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer'
   const sizes = { xs: 'px-2 py-1 text-xs h-7', sm: 'px-3 py-2 text-sm h-8', md: 'px-4 py-2 text-base h-10', lg: 'px-6 py-3 text-lg h-12' }
@@ -45,33 +47,19 @@ function Button({ children, className = '', size = 'md', variant = 'default', on
   )
 }
 
-// Card
-function Card({ children, className = '' }) {
-  return <div className={`rounded-lg border bg-white text-slate-950 shadow-sm ${className}`}>{children}</div>
-}
-function CardContent({ children, className = '' }) {
-  return <div className={`p-6 ${className}`}>{children}</div>
-}
+/* --------------------------------- Utils --------------------------------- */
+const addHours = (d, h) => new Date(d.getTime() + h * 3600_000)
+const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
+const endOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 45, 0, 0) // 15‑min step
+const sameDay = (a, b) => a.toDateString() === b.toDateString()
 
-// Utility
-function formatDateLocal(d) {
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-// Booking Widget
+/* ------------------------------ Booking Widget --------------------------- */
 function BookingWidget() {
-  const today = useMemo(() => new Date(), [])
-  const tomorrow = useMemo(() => {
-    const t = new Date()
-    t.setDate(t.getDate() + 1)
-    return t
-  }, [])
+  const now = useMemo(() => new Date(), [])
+  const defaultCheckout = useMemo(() => addHours(now, 24), [now])
 
-  const [checkIn, setCheckIn] = useState(formatDateLocal(today))
-  const [checkOut, setCheckOut] = useState(formatDateLocal(tomorrow))
+  const [checkIn, setCheckIn] = useState(now)
+  const [checkOut, setCheckOut] = useState(defaultCheckout)
   const [guests, setGuests] = useState(1)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
@@ -80,29 +68,22 @@ function BookingWidget() {
   const [saving, setSaving] = useState(false)
   const [savedOk, setSavedOk] = useState(false)
 
-  const handleGuestChange = (inc) => setGuests(prev => (inc ? prev + 1 : Math.max(1, prev - 1)))
-
-  const handleCheckInChange = (value) => {
-    setCheckIn(value)
-    const ci = new Date(value)
-    const co = new Date(checkOut)
-    if (!(co > ci)) {
-      const nextDay = new Date(ci)
-      nextDay.setDate(ci.getDate() + 1)
-      setCheckOut(formatDateLocal(nextDay))
-    }
+  // Ensure checkout is at least 1 hour after check-in
+  const handleCheckInChange = (date) => {
+    if (!date) return
+    setCheckIn(date)
+    const minCo = addHours(date, 1)
+    if (!(checkOut > minCo)) setCheckOut(minCo)
   }
 
-  const handleCheckOutChange = (value) => {
-    const ci = new Date(checkIn)
-    const co = new Date(value)
-    if (co > ci) setCheckOut(value)
-    else {
-      const nextDay = new Date(ci)
-      nextDay.setDate(ci.getDate() + 1)
-      setCheckOut(formatDateLocal(nextDay))
-    }
+  const handleCheckOutChange = (date) => {
+    if (!date) return
+    const minCo = addHours(checkIn, 1)
+    setCheckOut(date > minCo ? date : minCo)
   }
+
+  const minCheckInDate = now
+  const minCheckoutDate = addHours(checkIn, 1)
 
   const validate = () => {
     const e = {}
@@ -113,27 +94,63 @@ function BookingWidget() {
     return Object.keys(e).length === 0
   }
 
+  const formatDate = (d) => {
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
+  const formatTime12h = (d) => {
+    let hours = d.getHours()
+    const minutes = String(d.getMinutes()).padStart(2, '0')
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12
+    hours = hours ? hours : 12 // 0 becomes 12
+    return `${hours}:${minutes} ${ampm}`
+  }
+
   const handleBookNow = async () => {
     if (!validate()) return
     setSaving(true)
     setSavedOk(false)
     try {
-      const payload = { booking: { checkIn, checkOut, guests, name, mobile } }
+      const bookingData = {
+        checkIn: {
+          date: formatDate(checkIn),
+          time: formatTime12h(checkIn)
+        },
+        checkOut: {
+          date: formatDate(checkOut),
+          time: formatTime12h(checkOut)
+        },
+        guests,
+        name,
+        mobile
+      }
+
+      // Save locally (browser storage)
+      const existing = JSON.parse(localStorage.getItem('bookings') || '[]')
+      existing.push(bookingData)
+      localStorage.setItem('bookings', JSON.stringify(existing, null, 2))
+
+      // Optionally send to API
       const res = await fetch('/api/save-booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ booking: bookingData })
       })
-      if (!res.ok) {
-        const t = await res.text()
-        throw new Error(t || 'Failed to save booking')
-      }
+      if (!res.ok) throw new Error(await res.text())
+
       setSavedOk(true)
       setTimeout(() => setSavedOk(false), 2500)
       setName('')
       setMobile('')
       setGuests(1)
       setErrors({})
+      const freshNow = new Date()
+      setCheckIn(freshNow)
+      setCheckOut(addHours(freshNow, 24))
     } catch (err) {
       console.error('Booking save failed:', err)
       alert('Sorry, could not save your booking. Please try again.')
@@ -142,46 +159,53 @@ function BookingWidget() {
     }
   }
 
+
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-        {/* Check-in */}
+        {/* Check-in (date + time in one field) */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-IN</label>
-          <div className="relative">
-            <input
-              type="date"
-              value={checkIn}
-              min={formatDateLocal(today)}
-              onChange={(e) => handleCheckInChange(e.target.value)}
-              className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
-            />
-          </div>
+          <DatePicker
+            selected={checkIn}
+            onChange={handleCheckInChange}
+            showTimeSelect
+            timeIntervals={15}
+            dateFormat="yyyy-MM-dd h:mm aa"
+            minDate={minCheckInDate}
+            minTime={sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn)}
+            maxTime={endOfDay(checkIn)}
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+            placeholderText="Select date & time"
+          />
         </div>
 
-        {/* Check-out */}
+        {/* Check-out (date + time in one field) */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-OUT</label>
-          <div className="relative">
-            <input
-              type="date"
-              value={checkOut}
-              min={checkIn}
-              onChange={(e) => handleCheckOutChange(e.target.value)}
-              className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
-            />
-          </div>
+          <DatePicker
+            selected={checkOut}
+            onChange={handleCheckOutChange}
+            showTimeSelect
+            timeIntervals={15}
+            dateFormat="yyyy-MM-dd h:mm aa"
+            minDate={minCheckoutDate}
+            minTime={sameDay(checkOut, minCheckoutDate) ? minCheckoutDate : startOfDay(checkOut)}
+            maxTime={endOfDay(checkOut)}
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+            placeholderText="Select date & time"
+          />
         </div>
 
         {/* Guests */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">GUESTS</label>
           <div className="flex items-center border border-slate-300 rounded-md bg-white">
-            <button onClick={() => handleGuestChange(false)} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+            <button onClick={() => setGuests(g => Math.max(1, g - 1))} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
             </button>
             <span className="flex-1 text-center text-slate-900 font-medium text-sm">{guests}</span>
-            <button onClick={() => handleGuestChange(true)} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+            <button onClick={() => setGuests(g => g + 1)} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </button>
           </div>
@@ -224,7 +248,7 @@ function BookingWidget() {
   )
 }
 
-// Hero Background Slider
+/* --------------------------- Hero Background Slider ---------------------- */
 function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const slides = [
@@ -248,8 +272,8 @@ function HeroSlider() {
           className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide
             ? 'opacity-100 translate-x-0'
             : index === (currentSlide - 1 + slides.length) % slides.length
-            ? 'opacity-0 -translate-x-full'
-            : 'opacity-0 translate-x-full'}`}
+              ? 'opacity-0 -translate-x-full'
+              : 'opacity-0 translate-x-full'}`}
         >
           <Image src={slide.image || "/placeholder.svg"} alt={slide.alt} fill className="object-cover" priority={index === 0} />
         </div>
@@ -270,6 +294,7 @@ function HeroSlider() {
   )
 }
 
+/* ------------------------------- Hero Section ---------------------------- */
 export default function HeroSection() {
   const scrollToSection = (id) => {
     const el = document.getElementById(id)

@@ -8,8 +8,11 @@ import { useRouter } from 'next/navigation'
 
 const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
 
-// Hardcoded admin credentials
-const ADMIN_CREDENTIALS = { userId: 'admin123', password: '12345' }
+// Read from NEXT_PUBLIC_* env vars (client-side only)
+const ADMIN_CREDENTIALS = {
+  userId: process.env.NEXT_PUBLIC_ADMIN_USER_ID || '',
+  password: process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '',
+}
 
 export default function Header() {
   const router = useRouter()
@@ -53,11 +56,13 @@ export default function Header() {
   }
 
   const handleAdminSubmit = (e) => {
-    e?.preventDefault?.()
+    e && e.preventDefault && e.preventDefault()
     setAdminError('')
     setIsChecking(true)
     setTimeout(() => {
-      const ok = adminUserId.trim() === ADMIN_CREDENTIALS.userId && adminPassword === ADMIN_CREDENTIALS.password
+      const ok =
+        adminUserId.trim() === ADMIN_CREDENTIALS.userId &&
+        adminPassword === ADMIN_CREDENTIALS.password
       setIsChecking(false)
       if (ok) {
         sessionStorage.setItem('adminAuthed', '1')
@@ -77,14 +82,13 @@ export default function Header() {
     <>
       {/* Top Header Bar */}
       <div
-        className={`fixed top-0 w-full z-50 bg-slate-800 text-white py-2 px-4 transition-all duration-300 ${
-          isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0'
-        }`}
+        className={`fixed top-0 w-full z-50 bg-slate-800 text-white py-2 px-4 transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0'
+          }`}
       >
         <div className="container mx-auto">
-          {/* show from md (tablet) and up so iPads see Admin */}
+          {/* Desktop/tablet */}
           <div className="hidden md:flex items-center justify-between text-sm">
-            {/* Left side - Contact Info (wrap when needed on tablets) */}
+            {/* Left - Contact */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
               <div className="flex items-center space-x-2 min-w-0">
                 <MapPin className="w-4 h-4 text-amber-500" />
@@ -96,17 +100,13 @@ export default function Header() {
               </div>
               <div className="flex items-center space-x-2 min-w-0">
                 <Phone className="w-4 h-4 text-amber-500" />
-                {/* clickable + no-wrap to keep layout tidy */}
-                <a
-                  href="tel:+923001234567"
-                  className="whitespace-nowrap hover:text-amber-500 transition-colors"
-                >
+                <a href="tel:+923001234567" className="whitespace-nowrap hover:text-amber-500 transition-colors">
                   +92-300-1234567
                 </a>
               </div>
             </div>
 
-            {/* Right side - Admin + Social (desktop/tablet) */}
+            {/* Right - Admin + Social */}
             <div className="flex items-center space-x-6">
               <span
                 onClick={openAdminModal}
@@ -123,7 +123,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Mobile top header (xs–sm): compact + truncating phone */}
+          {/* Mobile top header */}
           <div className="md:hidden flex items-center justify-between text-sm">
             <div className="flex items-center space-x-2 min-w-0">
               <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
@@ -147,9 +147,8 @@ export default function Header() {
 
       {/* Main Header */}
       <header
-        className={`fixed w-full z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 transition-all duration-300 ${
-          isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0 top-8'
-        }`}
+        className={`fixed w-full z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0 top-8'
+          }`}
       >
         <div className="container mx-auto px-4 py-4">
           {/* Desktop Navigation */}
@@ -189,7 +188,7 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown (Admin inside hamburger) */}
+        {/* Mobile Menu Dropdown */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-slate-900/98 backdrop-blur-sm border-t border-slate-800">
             <div className="container mx-auto px-4 py-4">
@@ -268,9 +267,7 @@ export default function Header() {
               </div>
             </form>
 
-            <div className="mt-3 text-xs text-slate-500">
-              <span className="opacity-80">Hint:</span> <code>admin123 / 12345</code>
-            </div>
+
           </div>
         </div>
       )}

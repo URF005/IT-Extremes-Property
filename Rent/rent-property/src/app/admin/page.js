@@ -8,18 +8,23 @@ import { useRouter } from 'next/navigation'
 
 const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
 
-const DUMMY_USERS = [
-  { id: 'USR-0001', name: 'Ali Khan', email: 'ali.khan@example.com', phone: '+92 300 1111111', status: 'Active', joinedAt: '2025-06-12' },
-  { id: 'USR-0002', name: 'Sara Ahmed', email: 'sara.ahmed@example.com', phone: '+92 333 2222222', status: 'Pending', joinedAt: '2025-06-14' },
-  { id: 'USR-0003', name: 'Hassan Raza', email: 'hassan.raza@example.com', phone: '+92 301 3333333', status: 'Active', joinedAt: '2025-06-18' },
-  { id: 'USR-0004', name: 'Fatima Noor', email: 'fatima.noor@example.com', phone: '+92 302 4444444', status: 'Suspended', joinedAt: '2025-07-01' },
-  { id: 'USR-0005', name: 'Usman Ali', email: 'usman.ali@example.com', phone: '+92 304 5555555', status: 'Active', joinedAt: '2025-07-10' },
-  { id: 'USR-0006', name: 'Maryam Iqbal', email: 'maryam.iqbal@example.com', phone: '+92 306 6666666', status: 'Pending', joinedAt: '2025-07-16' },
-]
+// Deterministic (SSR-safe) date formatter
+const formatDateTimeUTC = (iso) => {
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  // e.g. "2025-08-12 05:51 UTC"
+  return d.toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
+}
 
 export default function AdminPage() {
   const router = useRouter()
   const [query, setQuery] = useState('')
+
+  // fetched data
+  const [messages, setMessages] = useState([]) // [{createdAt, contact:{...}}, ...]
+  const [bookings, setBookings] = useState([]) // [{createdAt, booking:{...}}, ...]
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   // 🔐 Client-side guard
   useEffect(() => {
@@ -27,20 +32,77 @@ export default function AdminPage() {
     if (!ok) router.replace('/')
   }, [router])
 
-  const filtered = useMemo(() => {
-    const q = query.toLowerCase().trim()
-    if (!q) return DUMMY_USERS
-    return DUMMY_USERS.filter(u =>
-      [u.id, u.name, u.email, u.phone, u.status, u.joinedAt].join(' ').toLowerCase().includes(q)
-    )
-  }, [query])
+  // fetch files from API routes
+  useEffect(() => {
+    let alive = true
+    const load = async () => {
+      try {
+        setLoading(true)
+        const [mRes, bRes] = await Promise.all([
+          fetch('/api/admin/messages', { cache: 'no-store' }),
+          fetch('/api/admin/bookings', { cache: 'no-store' }),
+        ])
+        const [mJson, bJson] = await Promise.all([mRes.json(), bRes.json()])
 
-  const statusBadge = (s) => {
-    const base = 'px-2 py-1 rounded text-[11px] sm:text-xs font-medium whitespace-nowrap'
-    if (s === 'Active') return <span className={`${base} bg-emerald-500/15 text-emerald-400 border border-emerald-700/50`}>Active</span>
-    if (s === 'Pending') return <span className={`${base} bg-amber-500/15 text-amber-400 border border-amber-700/50`}>Pending</span>
-    return <span className={`${base} bg-rose-500/15 text-rose-400 border border-rose-700/50`}>Suspended</span>
-  }
+        if (!alive) return
+        if (!mJson.ok) throw new Error(mJson.error || 'Failed to load messages')
+        if (!bJson.ok) throw new Error(bJson.error || 'Failed to load bookings')
+
+        // sort newest first (optional)
+        const msgs = (mJson.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        const bks = (bJson.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+
+        setMessages(msgs)
+        setBookings(bks)
+        setError(null)
+      } catch (e) {
+        console.error(e)
+        if (alive) setError(e.message || 'Load error')
+      } finally {
+        if (alive) setLoading(false)
+      }
+    }
+    load()
+    return () => { alive = false }
+  }, [])
+
+  // 🔎 Shared search across both datasets
+  const filteredMessages = useMemo(() => {
+    const q = query.toLowerCase().trim()
+    if (!q) return messages
+    return messages.filter(({ createdAt, contact }) =>
+      [
+        createdAt,
+        contact?.name,
+        contact?.email,
+        contact?.mobile,
+        contact?.message,
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [query, messages])
+
+  const filteredBookings = useMemo(() => {
+    const q = query.toLowerCase().trim()
+    if (!q) return bookings
+    return bookings.filter(({ createdAt, booking }) =>
+      [
+        createdAt,
+        booking?.name,
+        booking?.mobile,
+        booking?.guests,
+        booking?.checkIn?.date,
+        booking?.checkIn?.time,
+        booking?.checkOut?.date,
+        booking?.checkOut?.time,
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(q)
+    )
+  }, [query, bookings])
 
   const logout = () => {
     sessionStorage.removeItem('adminAuthed')
@@ -54,7 +116,7 @@ export default function AdminPage() {
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
           <div className="min-w-0">
             <h1 className={`${playfair.className} text-xl sm:text-2xl lg:text-3xl leading-tight`}>Admin Dashboard</h1>
-            <p className="text-slate-400 text-xs sm:text-sm mt-0.5">IT Extremes — User Management</p>
+            <p className="text-slate-400 text-xs sm:text-sm mt-0.5">IT Extremes — Messages & Bookings</p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
@@ -65,102 +127,200 @@ export default function AdminPage() {
             </Link>
             <button
               onClick={logout}
-              className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 text-xs sm:text-sm text-slate-200 hover:bg-slate-800 transition-colors"
+              className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 
+             text-xs sm:text-sm text-slate-200 bg-slate-900 
+             hover:bg-slate-800 hover:border-amber-500 hover:text-amber-400
+             transition-colors duration-200 ease-in-out"
               aria-label="Logout"
             >
               <LogOut className="w-4 h-4" />
               Logout
             </button>
+
           </div>
         </div>
       </div>
 
-      {/* Actions Row (sticky on mobile for quick search) */}
+      {/* Actions Row */}
       <div className="sticky top-[56px] sm:top-[64px] z-20 bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-slate-900/80 border-b border-slate-800">
         <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <div className="relative w-full sm:max-w-xl">
               <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
-                aria-label="Search users"
+                aria-label="Search messages & bookings"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="w-full pl-9 pr-3 py-2.5 rounded-md border border-slate-700 bg-slate-800 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-amber-500 text-sm"
-                placeholder="Search users by name, email, phone, status…"
+                placeholder="Search by name, email, mobile, dates, message…"
               />
             </div>
-            <div className="text-slate-400 text-xs sm:text-sm sm:ml-auto">
-              Showing <span className="text-amber-400 font-medium">{filtered.length}</span> of {DUMMY_USERS.length}
+
+            {/* Responsive counters */}
+            <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm text-slate-400 sm:ml-auto">
+              <span>
+                Messages:{' '}
+                <span className="text-amber-400 font-medium">{filteredMessages.length}</span> / {messages.length}
+              </span>
+              <span className="hidden sm:inline text-slate-600">|</span>
+              <span>
+                Bookings:{' '}
+                <span className="text-amber-400 font-medium">{filteredBookings.length}</span> / {bookings.length}
+              </span>
             </div>
           </div>
         </section>
       </div>
 
       {/* Content */}
-      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Desktop/Tablet Table (with horizontal scroll if needed) */}
-        <div className="hidden md:block rounded-xl border border-slate-800 bg-slate-900/40">
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[900px] text-sm">
-              <thead className="bg-slate-900/70 border-b border-slate-800">
-                <tr>
-                  <th scope="col" className="text-left px-4 py-3 font-semibold text-slate-300">User ID</th>
-                  <th scope="col" className="text-left px-4 py-3 font-semibold text-slate-300">Name</th>
-                  <th scope="col" className="text-left px-4 py-3 font-semibold text-slate-300">Email</th>
-                  <th scope="col" className="text-left px-4 py-3 font-semibold text-slate-300">Phone</th>
-                  <th scope="col" className="text-left px-4 py-3 font-semibold text-slate-300">Status</th>
-                  <th scope="col" className="text-left px-4 py-3 font-semibold text-slate-300">Joined</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((u) => (
-                  <tr key={u.id} className="border-b border-slate-800/60 hover:bg-slate-800/40">
-                    <td className="px-4 py-3 text-slate-200">{u.id}</td>
-                    <td className="px-4 py-3 text-slate-200">{u.name}</td>
-                    <td className="px-4 py-3 text-slate-300">{u.email}</td>
-                    <td className="px-4 py-3 text-slate-300">{u.phone}</td>
-                    <td className="px-4 py-3">{statusBadge(u.status)}</td>
-                    <td className="px-4 py-3 text-slate-400">{u.joinedAt}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
+        {/* Loading / Error */}
+        {loading && (
+          <div className="text-slate-400 text-sm">Loading data…</div>
+        )}
+        {error && !loading && (
+          <div className="text-rose-400 text-sm">Error: {error}</div>
+        )}
 
-        {/* Mobile Cards */}
-        <div className="md:hidden grid grid-cols-1 gap-4">
-          {filtered.map((u) => (
-            <article
-              key={u.id}
-              className="rounded-xl border border-slate-800 bg-slate-900/40 p-4"
-              aria-label={`User ${u.name}`}
-            >
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <h3 className="font-semibold text-base leading-tight">{u.name}</h3>
-                {statusBadge(u.status)}
+        {/* =================== Messages =================== */}
+        {!loading && !error && (
+          <div>
+            <header className="mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold">User Messages</h2>
+              <p className="text-slate-400 text-sm">Latest contact form submissions</p>
+            </header>
+
+            {/* Desktop/Tablet Table */}
+            <div className="hidden md:block rounded-xl border border-slate-800 bg-slate-900/40">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[900px] text-sm">
+                  <thead className="bg-slate-900/70 border-b border-slate-800">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Created At</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Name</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Email</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Mobile</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Message</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMessages.map((m, idx) => (
+                      <tr key={idx} className="border-b border-slate-800/60 hover:bg-slate-800/40 align-top">
+                        <td className="px-4 py-3 text-slate-400">{formatDateTimeUTC(m.createdAt)}</td>
+                        <td className="px-4 py-3 text-slate-200">{m.contact?.name}</td>
+                        <td className="px-4 py-3 text-slate-300">{m.contact?.email}</td>
+                        <td className="px-4 py-3 text-slate-300">{m.contact?.mobile}</td>
+                        <td className="px-4 py-3 text-slate-200 max-w-[420px]">
+                          <span className="line-clamp-2">{m.contact?.message}</span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <dl className="text-sm text-slate-300 space-y-1">
-                <div className="flex justify-between gap-3">
-                  <dt className="text-slate-400">ID</dt>
-                  <dd className="text-right">{u.id}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-slate-400">Email</dt>
-                  <dd className="text-right break-all">{u.email}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-slate-400">Phone</dt>
-                  <dd className="text-right">{u.phone}</dd>
-                </div>
-                <div className="flex justify-between gap-3">
-                  <dt className="text-slate-400">Joined</dt>
-                  <dd className="text-right">{u.joinedAt}</dd>
-                </div>
-              </dl>
-            </article>
-          ))}
-        </div>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden grid grid-cols-1 gap-4">
+              {filteredMessages.map((m, idx) => (
+                <article key={idx} className="rounded-xl border border-slate-800 bg-slate-900/40 p-4" aria-label={`Message from ${m.contact?.name || 'User'}`}>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <h3 className="font-semibold text-base leading-tight">{m.contact?.name}</h3>
+                    <span className="text-xs text-slate-400">{formatDateTimeUTC(m.createdAt)}</span>
+                  </div>
+                  <dl className="text-sm text-slate-300 space-y-1">
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-400">Email</dt>
+                      <dd className="text-right break-all">{m.contact?.email}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-400">Mobile</dt>
+                      <dd className="text-right">{m.contact?.mobile}</dd>
+                    </div>
+                    <div className="mt-2">
+                      <dt className="text-slate-400 mb-1">Message</dt>
+                      <dd className="text-slate-200">{m.contact?.message}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* =================== Bookings =================== */}
+        {!loading && !error && (
+          <div>
+            <header className="mb-3 sm:mb-4">
+              <h2 className="text-lg sm:text-xl font-semibold">User Bookings</h2>
+              <p className="text-slate-400 text-sm">Upcoming and recent bookings</p>
+            </header>
+
+            {/* Desktop/Tablet Table */}
+            <div className="hidden md:block rounded-xl border border-slate-800 bg-slate-900/40">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[1000px] text-sm">
+                  <thead className="bg-slate-900/70 border-b border-slate-800">
+                    <tr>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Created At</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Name</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Mobile</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Guests</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Check-In</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Check-Out</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredBookings.map((b, idx) => (
+                      <tr key={idx} className="border-b border-slate-800/60 hover:bg-slate-800/40">
+                        <td className="px-4 py-3 text-slate-400">{formatDateTimeUTC(b.createdAt)}</td>
+                        <td className="px-4 py-3 text-slate-200">{b.booking?.name}</td>
+                        <td className="px-4 py-3 text-slate-300">{b.booking?.mobile}</td>
+                        <td className="px-4 py-3 text-slate-300">{b.booking?.guests}</td>
+                        <td className="px-4 py-3 text-slate-300">
+                          {b.booking?.checkIn?.date} • {b.booking?.checkIn?.time}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300">
+                          {b.booking?.checkOut?.date} • {b.booking?.checkOut?.time}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden grid grid-cols-1 gap-4">
+              {filteredBookings.map((b, idx) => (
+                <article key={idx} className="rounded-xl border border-slate-800 bg-slate-900/40 p-4" aria-label={`Booking by ${b.booking?.name || 'User'}`}>
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <h3 className="font-semibold text-base leading-tight">{b.booking?.name}</h3>
+                    <span className="text-xs text-slate-400">{formatDateTimeUTC(b.createdAt)}</span>
+                  </div>
+                  <dl className="text-sm text-slate-300 space-y-1">
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-400">Mobile</dt>
+                      <dd className="text-right">{b.booking?.mobile}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-400">Guests</dt>
+                      <dd className="text-right">{b.booking?.guests}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-400">Check-In</dt>
+                      <dd className="text-right">{b.booking?.checkIn?.date} • {b.booking?.checkIn?.time}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3">
+                      <dt className="text-slate-400">Check-Out</dt>
+                      <dd className="text-right">{b.booking?.checkOut?.date} • {b.booking?.checkOut?.time}</dd>
+                    </div>
+                  </dl>
+                </article>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
     </main>
   )

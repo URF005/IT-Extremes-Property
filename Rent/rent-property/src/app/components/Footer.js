@@ -78,7 +78,6 @@ export default function Footer() {
                   Contact
                 </button>
               </li>
-
             </ul>
           </div>
 
