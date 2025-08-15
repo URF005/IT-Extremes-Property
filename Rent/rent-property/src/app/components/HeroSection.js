@@ -3,11 +3,11 @@
 import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { CheckCircle2, X as CloseIcon } from 'lucide-react'
-import { Playfair_Display } from 'next/font/google'
+import { Mulish } from 'next/font/google'
 import DatePicker from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 
-const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
+const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
 /* ----------------------------- Floating Alert ----------------------------- */
 function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We’ll contact you shortly.', onClose }) {
@@ -17,8 +17,8 @@ function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We�
       w-full max-w-sm sm:max-w-xs bottom-0 sm:bottom-4 sm:right-4 sm:translate-x-0`}
       style={{ left: show ? '50%' : '50%', transform: show ? 'translate(-50%, 0)' : 'translate(-50%, 1rem)' }}
     >
-      <div className="mx-auto sm:mx-0 flex items-start gap-3 rounded-xl border border-emerald-300/60 bg-white/95 backdrop-blur p-4 shadow-2xl w-[90%] sm:w-auto">
-        <CheckCircle2 className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+      <div className="mx-auto sm:mx-0 flex items-start gap-3 rounded-xl border border-[#01F5FF]/60 bg-white/95 backdrop-blur p-4 shadow-2xl w-[90%] sm:w-auto">
+        <CheckCircle2 className="w-5 h-5 text-[#01F5FF] mt-0.5 flex-shrink-0" />
         <div className="pr-6">
           <p className="text-slate-900 font-semibold">{title}</p>
           <p className="text-slate-600 text-sm break-words">{message}</p>
@@ -36,9 +36,9 @@ function Button({ children, className = '', size = 'md', variant = 'default', on
   const base = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer'
   const sizes = { xs: 'px-2 py-1 text-xs h-7', sm: 'px-3 py-2 text-sm h-8', md: 'px-4 py-2 text-base h-10', lg: 'px-6 py-3 text-lg h-12' }
   const variants = {
-    default: 'bg-amber-500 text-slate-900 hover:bg-amber-600 focus:ring-amber-500',
-    outline: 'border border-amber-500 text-amber-500 bg-transparent hover:bg-amber-500 hover:text-slate-900 focus:ring-amber-500',
-    link: 'text-amber-500 hover:text-amber-400 underline-offset-4 hover:underline bg-transparent p-0 h-auto'
+    default: 'bg-[#01F5FF] text-slate-900 hover:bg-[#00DDEE] focus:ring-[#01F5FF]',
+    outline: 'border border-[#01F5FF] text-[#01F5FF] bg-transparent hover:bg-[#01F5FF] hover:text-slate-900 focus:ring-[#01F5FF]',
+    link: 'text-[#01F5FF] hover:text-[#00DDEE] underline-offset-4 hover:underline bg-transparent p-0 h-auto'
   }
   return (
     <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} onClick={onClick} {...props}>
@@ -50,7 +50,7 @@ function Button({ children, className = '', size = 'md', variant = 'default', on
 /* --------------------------------- Utils --------------------------------- */
 const addHours = (d, h) => new Date(d.getTime() + h * 3600_000)
 const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
-const endOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 45, 0, 0) // 15‑min step
+const endOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 45, 0, 0) // 15-min step
 const sameDay = (a, b) => a.toDateString() === b.toDateString()
 
 /* ------------------------------ Booking Widget --------------------------- */
@@ -68,7 +68,6 @@ function BookingWidget() {
   const [saving, setSaving] = useState(false)
   const [savedOk, setSavedOk] = useState(false)
 
-  // Ensure checkout is at least 1 hour after check-in
   const handleCheckInChange = (date) => {
     if (!date) return
     setCheckIn(date)
@@ -106,7 +105,7 @@ function BookingWidget() {
     const minutes = String(d.getMinutes()).padStart(2, '0')
     const ampm = hours >= 12 ? 'PM' : 'AM'
     hours = hours % 12
-    hours = hours ? hours : 12 // 0 becomes 12
+    hours = hours ? hours : 12
     return `${hours}:${minutes} ${ampm}`
   }
 
@@ -116,25 +115,17 @@ function BookingWidget() {
     setSavedOk(false)
     try {
       const bookingData = {
-        checkIn: {
-          date: formatDate(checkIn),
-          time: formatTime12h(checkIn)
-        },
-        checkOut: {
-          date: formatDate(checkOut),
-          time: formatTime12h(checkOut)
-        },
+        checkIn: { date: formatDate(checkIn), time: formatTime12h(checkIn) },
+        checkOut: { date: formatDate(checkOut), time: formatTime12h(checkOut) },
         guests,
         name,
         mobile
       }
 
-      // Save locally (browser storage)
       const existing = JSON.parse(localStorage.getItem('bookings') || '[]')
       existing.push(bookingData)
       localStorage.setItem('bookings', JSON.stringify(existing, null, 2))
 
-      // Optionally send to API
       const res = await fetch('/api/save-booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -159,11 +150,10 @@ function BookingWidget() {
     }
   }
 
-
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-        {/* Check-in (date + time in one field) */}
+        {/* Check-in */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-IN</label>
           <DatePicker
@@ -175,12 +165,12 @@ function BookingWidget() {
             minDate={minCheckInDate}
             minTime={sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn)}
             maxTime={endOfDay(checkIn)}
-            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
             placeholderText="Select date & time"
           />
         </div>
 
-        {/* Check-out (date + time in one field) */}
+        {/* Check-out */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-OUT</label>
           <DatePicker
@@ -192,7 +182,7 @@ function BookingWidget() {
             minDate={minCheckoutDate}
             minTime={sameDay(checkOut, minCheckoutDate) ? minCheckoutDate : startOfDay(checkOut)}
             maxTime={endOfDay(checkOut)}
-            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
             placeholderText="Select date & time"
           />
         </div>
@@ -219,7 +209,7 @@ function BookingWidget() {
             value={name}
             onChange={(e) => { setName(e.target.value); if (errors.name) setErrors(prev => ({ ...prev, name: '' })) }}
             placeholder="Your Name"
-            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
           />
           {errors.name && <p className="text-xs text-red-500 -mt-1">{errors.name}</p>}
         </div>
@@ -233,7 +223,7 @@ function BookingWidget() {
               value={mobile}
               onChange={(e) => { setMobile(e.target.value); if (errors.mobile) setErrors(prev => ({ ...prev, mobile: '' })) }}
               placeholder="+92-3XX-XXXXXXX"
-              className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 text-sm"
+              className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
             />
             <Button onClick={handleBookNow} disabled={saving} className="px-4 min-w-[110px] h-12">
               {saving ? 'Saving...' : 'Book Now'}
@@ -252,11 +242,10 @@ function BookingWidget() {
 function HeroSlider() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const slides = [
-    { image: '/property-1.png', alt: 'Modern luxury apartment in Islamabad' },
-    { image: '/property-2.png', alt: 'Premium house in Karachi' },
-    { image: '/property-3.png', alt: 'Furnished room in Lahore' },
-    { image: '/property-4.png', alt: 'Luxury villa in Rawalpindi' },
-    { image: '/property-5.png', alt: 'Studio apartment in Wah Cantt' }
+    { image: '/img1.jpeg', alt: 'Islamabad' },
+    { image: '/img2.jpeg', alt: 'Islamabad' },
+    { image: '/img3.jpeg', alt: 'Islamabad' },
+    { image: '/img4.jpeg', alt: 'Islamabad' },
   ]
 
   useEffect(() => {
@@ -286,7 +275,7 @@ function HeroSlider() {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-amber-500 scale-110' : 'bg-white/50 hover:bg-white/70'}`}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-[#01F5FF] scale-110' : 'bg-white/50 hover:bg-white/70'}`}
           />
         ))}
       </div>
@@ -305,21 +294,22 @@ export default function HeroSection() {
   }
 
   return (
-    <section id="home" className="relative min-h-screen flex flex-col justify-center overflow-hidden pt-32 sm:pt-36 md:pt-40 pb-8">
+    <section id="home" className={`${mulish.className} relative min-h-screen flex flex-col justify-center overflow-hidden pt-32 sm:pt-36 md:pt-40 pb-8`}>
       <HeroSlider />
 
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 flex-1 flex flex-col justify-center">
         <div className="space-y-6 sm:space-y-8 mb-8">
-          <h1 className={`${playfair.className} text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight animate-fade-in-up`}>
-            PREMIUM RENTAL<br />PROPERTIES
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-bold animate-fade-in-up">
+            Rooms/ Apartment for rent in B17
           </h1>
-          <div className="w-24 h-0.5 bg-amber-500 mx-auto animate-fade-in-up animation-delay-200"></div>
+
+          <div className="w-24 h-0.5 bg-[#01F5FF] mx-auto animate-fade-in-up animation-delay-200"></div>
           <p className="text-lg sm:text-xl md:text-2xl text-slate-200 max-w-2xl mx-auto px-4 leading-relaxed animate-fade-in-up animation-delay-400">
             Discover premium rentals in Islamabad - from luxury apartments to comfortable homes in B-17 Islamabad
           </p>
           <button
             onClick={() => scrollToSection('properties')}
-            className="bg-amber-500 hover:bg-amber-600 text-slate-900 px-6 py-2 text-sm mx-auto font-semibold rounded-md animate-fade-in-up animation-delay-600"
+            className="bg-[#01F5FF] hover:bg-[#00DDEE] text-slate-900 px-6 py-2 text-sm mx-auto font-semibold rounded-md animate-fade-in-up animation-delay-600"
           >
             Explore Properties
           </button>

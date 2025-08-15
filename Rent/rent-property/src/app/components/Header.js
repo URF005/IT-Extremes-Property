@@ -1,12 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { MapPin, Mail, Phone, Menu, X } from 'lucide-react'
-import { Playfair_Display } from 'next/font/google'
+import { Mulish } from 'next/font/google'
 import { FaFacebookF, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa'
 import { useRouter } from 'next/navigation'
 
-const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
+const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
 // Read from NEXT_PUBLIC_* env vars (client-side only)
 const ADMIN_CREDENTIALS = {
@@ -79,11 +80,12 @@ export default function Header() {
   }
 
   return (
-    <>
+    <div className={mulish.className}>
       {/* Top Header Bar */}
       <div
-        className={`fixed top-0 w-full z-50 bg-slate-800 text-white py-2 px-4 transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0'
-          }`}
+        className={`fixed top-0 w-full z-50 bg-slate-800 text-white py-2 px-4 transition-all duration-300 ${
+          isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0'
+        }`}
       >
         <div className="container mx-auto">
           {/* Desktop/tablet */}
@@ -91,17 +93,17 @@ export default function Header() {
             {/* Left - Contact */}
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
               <div className="flex items-center space-x-2 min-w-0">
-                <MapPin className="w-4 h-4 text-amber-500" />
+                <MapPin className="w-4 h-4 text-[#01F5FF]" />
                 <span className="whitespace-nowrap">Islamabad, Pakistan</span>
               </div>
               <div className="flex items-center space-x-2 min-w-0">
-                <Mail className="w-4 h-4 text-amber-500" />
-                <span className="whitespace-nowrap">info@itextremes.com</span>
+                <Mail className="w-4 h-4 text-[#01F5FF]" />
+                <span className="whitespace-nowrap">Support@rentsinn.com</span>
               </div>
               <div className="flex items-center space-x-2 min-w-0">
-                <Phone className="w-4 h-4 text-amber-500" />
-                <a href="tel:+923001234567" className="whitespace-nowrap hover:text-amber-500 transition-colors">
-                  +92-300-1234567
+                <Phone className="w-4 h-4 text-[#01F5FF]" />
+                <a href="tel:+923001234567" className="whitespace-nowrap hover:text-[#01F5FF] transition-colors">
+                  +92-303-3304987
                 </a>
               </div>
             </div>
@@ -110,15 +112,33 @@ export default function Header() {
             <div className="flex items-center space-x-6">
               <span
                 onClick={openAdminModal}
-                className="cursor-pointer hover:text-amber-500 transition-colors font-medium"
+                className="cursor-pointer hover:text-[#01F5FF] transition-colors font-medium"
               >
                 Admin
               </span>
               <div className="flex items-center space-x-3 ml-2">
-                <FaFacebookF className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
-                <FaInstagram className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
-                <FaYoutube className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
-                <FaTiktok className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
+                <a
+                  href="https://www.facebook.com/share/1LghvgvnzK/?mibextid=wwXIfr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaFacebookF className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+                </a>
+                <a
+                  href="https://www.instagram.com/rentsinn05/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaInstagram className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+                </a>
+                <a
+                  href="https://www.youtube.com/channel/UC2OKQJ8YlbZG1Rsv0ZchEVQ"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaYoutube className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+                </a>
+                <FaTiktok className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
               </div>
             </div>
           </div>
@@ -126,20 +146,38 @@ export default function Header() {
           {/* Mobile top header */}
           <div className="md:hidden flex items-center justify-between text-sm">
             <div className="flex items-center space-x-2 min-w-0">
-              <Phone className="w-4 h-4 text-amber-500 flex-shrink-0" />
+              <Phone className="w-4 h-4 text-[#01F5FF] flex-shrink-0" />
               <a
                 href="tel:+923001234567"
-                className="text-xs sm:text-sm truncate max-w-[140px] hover:text-amber-500 transition-colors"
-                title="+92-300-1234567"
+                className="text-xs sm:text-sm truncate max-w-[140px] hover:text-[#01F5FF] transition-colors"
+                title="+92-303-3304987"
               >
-                +92-300-1234567
+                +92-303-3304987
               </a>
             </div>
             <div className="flex items-center space-x-3">
-              <FaFacebookF className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
-              <FaInstagram className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
-              <FaYoutube className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
-              <FaTiktok className="w-4 h-4 hover:text-amber-500 cursor-pointer transition-colors" />
+              <a
+                href="https://www.facebook.com/share/1LghvgvnzK/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaFacebookF className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
+              <a
+                href="https://www.instagram.com/rentsinn05/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaInstagram className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
+              <a
+                href="https://www.youtube.com/channel/UC2OKQJ8YlbZG1Rsv0ZchEVQ"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaYoutube className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
+              <FaTiktok className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
             </div>
           </div>
         </div>
@@ -147,40 +185,71 @@ export default function Header() {
 
       {/* Main Header */}
       <header
-        className={`fixed w-full z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0 top-8'
-          }`}
+        className={`fixed w-full z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 transition-all duration-300 ${
+          isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0 top-8'
+        }`}
       >
         <div className="container mx-auto px-4 py-4">
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center justify-center">
-            <nav className="flex items-center space-x-8">
-              <button onClick={() => scrollToSection('home')} className="text-white hover:text-amber-500 transition-colors font-medium">
+          <div className="hidden md:grid grid-cols-3 items-center">
+            {/* Left: Logo */}
+            <div className="flex items-center">
+              <button
+                onClick={() => scrollToSection('home')}
+                className="flex items-center focus:outline-none"
+                aria-label="Go to Home"
+              >
+                <Image
+                  src="/logo.png"
+                  alt="Rents Inn"
+                  width={140}
+                  height={40}
+                  className="h-10 w-auto"
+                  priority
+                />
+              </button>
+            </div>
+
+            {/* Center: Nav items */}
+            <nav className="flex items-center justify-center space-x-8">
+              <button onClick={() => scrollToSection('home')} className="text-white hover:text-[#01F5FF] transition-colors font-medium">
                 Home
               </button>
-              <button onClick={() => scrollToSection('properties')} className="text-slate-300 hover:text-amber-500 transition-colors font-medium">
+              <button onClick={() => scrollToSection('properties')} className="text-slate-300 hover:text-[#01F5FF] transition-colors font-medium">
                 Properties
               </button>
-              <button onClick={() => scrollToSection('contact')} className="text-slate-300 hover:text-amber-500 transition-colors font-medium">
+              <button onClick={() => scrollToSection('contact')} className="text-slate-300 hover:text-[#01F5FF] transition-colors font-medium">
                 Contact
               </button>
-              <button onClick={() => scrollToSection('about')} className="text-slate-300 hover:text-amber-500 transition-colors font-medium">
+              <button onClick={() => scrollToSection('about')} className="text-slate-300 hover:text-[#01F5FF] transition-colors font-medium">
                 About
               </button>
             </nav>
+
+            {/* Right Spacer */}
+            <div />
           </div>
 
           {/* Mobile Navigation */}
           <div className="md:hidden flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-                <span className="text-slate-900 font-bold text-sm">IT</span>
-              </div>
-              <span className={`${playfair.className} text-white text-xl`}>IT Extremes</span>
-            </div>
+            <button
+              onClick={() => scrollToSection('home')}
+              className="flex items-center focus:outline-none"
+              aria-label="Go to Home"
+            >
+              <Image
+                src="/logo.png"
+                alt="Rents Inn"
+                width={120}
+                height={36}
+                className="h-9 w-auto"
+                priority
+              />
+            </button>
 
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-white hover:text-amber-500 transition-colors p-2"
+              className="text-white hover:text-[#01F5FF] transition-colors p-2"
               aria-label="Toggle Menu"
             >
               {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -188,24 +257,24 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Menu Dropdown */}
+        {/* Mobile Menu */}
         {isMobileMenuOpen && (
           <div className="md:hidden bg-slate-900/98 backdrop-blur-sm border-t border-slate-800">
             <div className="container mx-auto px-4 py-4">
               <nav className="space-y-3">
-                <button onClick={() => scrollToSection('home')} className="block w-full text-left text-white hover:text-amber-500 transition-colors font-medium py-2">
+                <button onClick={() => scrollToSection('home')} className="block w-full text-left text-white hover:text-[#01F5FF] transition-colors font-medium py-2">
                   Home
                 </button>
-                <button onClick={() => scrollToSection('properties')} className="block w-full text-left text-slate-300 hover:text-amber-500 transition-colors font-medium py-2">
+                <button onClick={() => scrollToSection('properties')} className="block w-full text-left text-slate-300 hover:text-[#01F5FF] transition-colors font-medium py-2">
                   Properties
                 </button>
-                <button onClick={() => scrollToSection('contact')} className="block w-full text-left text-slate-300 hover:text-amber-500 transition-colors font-medium py-2">
+                <button onClick={() => scrollToSection('contact')} className="block w-full text-left text-slate-300 hover:text-[#01F5FF] transition-colors font-medium py-2">
                   Contact
                 </button>
-                <button onClick={() => scrollToSection('about')} className="block w-full text-left text-slate-300 hover:text-amber-500 transition-colors font-medium py-2">
+                <button onClick={() => scrollToSection('about')} className="block w-full text-left text-slate-300 hover:text-[#01F5FF] transition-colors font-medium py-2">
                   About
                 </button>
-                <span onClick={openAdminFromMenu} className="block w-full text-left text-slate-300 hover:text-amber-500 transition-colors font-medium py-2 cursor-pointer">
+                <span onClick={openAdminFromMenu} className="block w-full text-left text-slate-300 hover:text-[#01F5FF] transition-colors font-medium py-2 cursor-pointer">
                   Admin
                 </span>
               </nav>
@@ -214,7 +283,7 @@ export default function Header() {
         )}
       </header>
 
-      {/* Admin Login Modal */}
+      {/* Admin Modal */}
       {showAdminModal && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminModal(false)} />
@@ -230,7 +299,7 @@ export default function Header() {
                   value={adminUserId}
                   onChange={(e) => setAdminUserId(e.target.value)}
                   onKeyDown={handleAdminKeyDown}
-                  className="w-full rounded-md border border-slate-700 bg-slate-800 p-2.5 text-white outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full rounded-md border border-slate-700 bg-slate-800 p-2.5 text-white outline-none focus:ring-2 focus:ring-[#01F5FF]"
                   placeholder="Enter User ID"
                   autoFocus
                 />
@@ -242,7 +311,7 @@ export default function Header() {
                   value={adminPassword}
                   onChange={(e) => setAdminPassword(e.target.value)}
                   onKeyDown={handleAdminKeyDown}
-                  className="w-full rounded-md border border-slate-700 bg-slate-800 p-2.5 text-white outline-none focus:ring-2 focus:ring-amber-500"
+                  className="w-full rounded-md border border-slate-700 bg-slate-800 p-2.5 text-white outline-none focus:ring-2 focus:ring-[#01F5FF]"
                   placeholder="Enter Password"
                 />
               </div>
@@ -253,7 +322,7 @@ export default function Header() {
                 <button
                   type="submit"
                   disabled={isChecking}
-                  className="flex-1 inline-flex items-center justify-center rounded-md bg-amber-500 px-4 py-2 font-medium text-slate-900 hover:bg-amber-600 transition-colors disabled:opacity-60"
+                  className="flex-1 inline-flex items-center justify-center rounded-md bg-[#01F5FF] px-4 py-2 font-medium text-slate-900 hover:bg-[#00ddee] transition-colors disabled:opacity-60"
                 >
                   {isChecking ? 'Checking…' : 'Login'}
                 </button>
@@ -266,11 +335,9 @@ export default function Header() {
                 </button>
               </div>
             </form>
-
-
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }

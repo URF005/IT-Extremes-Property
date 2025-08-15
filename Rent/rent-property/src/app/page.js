@@ -6,6 +6,7 @@ import AboutSection from './components/AboutSection'
 import PropertiesSection from './components/PropertiesSection'
 import ReviewsSection from './components/ReviewsSection'
 import ContactSection from './components/ContactSection'
+import MainProperty from './components/MainProperty'
 import Footer from './components/Footer'
 import { Inter } from 'next/font/google'
 
@@ -16,8 +17,9 @@ export default function Home() {
     <div className={`min-h-screen bg-slate-900 ${inter.className}`}>
       <Header />
       <HeroSection />
-      <AboutSection />
+      <MainProperty/>
       <PropertiesSection />
+     <AboutSection/>
       <ReviewsSection />
       <ContactSection />
       <Footer />

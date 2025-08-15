@@ -2,13 +2,19 @@
 
 import { useEffect, useState } from 'react'
 import { Star } from 'lucide-react'
-import { Playfair_Display } from 'next/font/google'
+import { Playfair_Display, Mulish } from 'next/font/google'
 
 const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
+const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
 function Card({ children, className = '' }) {
-  return <div className={`rounded-lg border bg-white text-slate-950 shadow-sm ${className}`}>{children}</div>
+  return (
+    <div className={`rounded-lg border bg-white text-slate-950 shadow-sm ${mulish.className} ${className}`}>
+      {children}
+    </div>
+  )
 }
+
 function CardContent({ children, className = '' }) {
   return <div className={`p-6 ${className}`}>{children}</div>
 }
@@ -19,13 +25,13 @@ function ClientReviewsSlider() {
     {
       name: "Ahmed Hassan",
       role: "Software Engineer",
-      content: "Found my ideal apartment at Capital Square through IT Extremes. The modern amenities and prime location are perfect.",
+      content: "Found my ideal apartment at Capital Square through Rents Inn. The modern amenities and prime location are perfect.",
       rating: 5
     },
     {
       name: "Fatima Khan",
       role: "Marketing Manager",
-      content: "IT Extremes secured me a beautiful house in Block B. Their knowledge of Islamabad's sectors is impressive.",
+      content: "Rents Inn secured me a beautiful house in Block B. Their knowledge of Islamabad's sectors is impressive.",
       rating: 5
     },
     {
@@ -37,13 +43,16 @@ function ClientReviewsSlider() {
     {
       name: "Ayesha Raza",
       role: "University Professor",
-      content: "As a newcomer to Islamabad, IT Extremes perfectly matched me with Capital Square's secure community.",
+      content: "As a newcomer to Islamabad, Rents Inn perfectly matched me with Capital Square's secure community.",
       rating: 5
     }
   ]
 
   useEffect(() => {
-    const timer = setInterval(() => setCurrentReview((prev) => (prev + 1) % reviews.length), 5000)
+    const timer = setInterval(
+      () => setCurrentReview((prev) => (prev + 1) % reviews.length),
+      5000
+    )
     return () => clearInterval(timer)
   }, [reviews.length])
 
@@ -52,22 +61,34 @@ function ClientReviewsSlider() {
       {reviews.map((review, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentReview ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+            index === currentReview ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}
         >
           <Card className="border-slate-200 h-full">
-            {/* Added bottom padding so dots don't crowd the name on small screens */}
             <CardContent className="h-full flex flex-col pb-14 md:pb-8">
+              {/* Stars */}
               <div className="flex items-center mb-4">
                 {[...Array(review.rating)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 fill-amber-500 text-amber-500" />
+                  <Star
+                    key={i}
+                    className="w-5 h-5"
+                    style={{ fill: "#01F5FF", color: "#01F5FF" }}
+                  />
                 ))}
               </div>
+
+              {/* Review text */}
               <p className="text-black text-lg md:text-xl mb-6 italic flex-grow">
                 "{review.content}"
               </p>
-              {/* Increased gap between avatar and text on small devices */}
+
+              {/* Reviewer */}
               <div className="flex items-center gap-3 sm:gap-4">
-                <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: "#01F5FF" }}
+                >
                   <span className="text-black font-bold">
                     {review.name.split(' ').map(n => n[0]).join('')}
                   </span>
@@ -82,13 +103,18 @@ function ClientReviewsSlider() {
         </div>
       ))}
 
-      {/* Dots moved a bit lower on mobile, standard on sm+ */}
+      {/* Dots */}
       <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
         {reviews.map((_, index) => (
           <button
             key={index}
             onClick={() => setCurrentReview(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentReview ? 'bg-amber-500 scale-110' : 'bg-slate-600 hover:bg-slate-500'}`}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === currentReview ? 'scale-110' : 'hover:bg-slate-500'
+            }`}
+            style={{
+              backgroundColor: index === currentReview ? '#01F5FF' : '#475569'
+            }}
           />
         ))}
       </div>
@@ -104,7 +130,10 @@ export default function ReviewsSection() {
           <h2 className={`${playfair.className} text-3xl sm:text-4xl md:text-5xl text-white mb-6`}>
             What They're Saying
           </h2>
-          <div className="w-16 h-0.5 bg-amber-500 mx-auto mb-6 lg:mb-8"></div>
+          <div
+            className="w-16 h-0.5 mx-auto mb-6 lg:mb-8"
+            style={{ backgroundColor: "#01F5FF" }}
+          ></div>
         </div>
 
         <div className="max-w-4xl mx-auto">

@@ -1,18 +1,21 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Playfair_Display } from 'next/font/google'
+import { Mulish } from 'next/font/google'
 import { Search, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
-const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
+const mulish = Mulish({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['300', '400', '500', '600', '700', '800'] // multiple weights for headings/body
+})
 
 // Deterministic (SSR-safe) date formatter
 const formatDateTimeUTC = (iso) => {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
-  // e.g. "2025-08-12 05:51 UTC"
   return d.toISOString().replace('T', ' ').slice(0, 16) + ' UTC'
 }
 
@@ -21,14 +24,16 @@ export default function AdminPage() {
   const [query, setQuery] = useState('')
 
   // fetched data
-  const [messages, setMessages] = useState([]) // [{createdAt, contact:{...}}, ...]
-  const [bookings, setBookings] = useState([]) // [{createdAt, booking:{...}}, ...]
+  const [messages, setMessages] = useState([])
+  const [bookings, setBookings] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   // 🔐 Client-side guard
   useEffect(() => {
-    const ok = typeof window !== 'undefined' && sessionStorage.getItem('adminAuthed') === '1'
+    const ok =
+      typeof window !== 'undefined' &&
+      sessionStorage.getItem('adminAuthed') === '1'
     if (!ok) router.replace('/')
   }, [router])
 
@@ -40,7 +45,7 @@ export default function AdminPage() {
         setLoading(true)
         const [mRes, bRes] = await Promise.all([
           fetch('/api/admin/messages', { cache: 'no-store' }),
-          fetch('/api/admin/bookings', { cache: 'no-store' }),
+          fetch('/api/admin/bookings', { cache: 'no-store' })
         ])
         const [mJson, bJson] = await Promise.all([mRes.json(), bRes.json()])
 
@@ -48,9 +53,12 @@ export default function AdminPage() {
         if (!mJson.ok) throw new Error(mJson.error || 'Failed to load messages')
         if (!bJson.ok) throw new Error(bJson.error || 'Failed to load bookings')
 
-        // sort newest first (optional)
-        const msgs = (mJson.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        const bks = (bJson.data || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        const msgs = (mJson.data || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        )
+        const bks = (bJson.data || []).sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        )
 
         setMessages(msgs)
         setBookings(bks)
@@ -63,7 +71,9 @@ export default function AdminPage() {
       }
     }
     load()
-    return () => { alive = false }
+    return () => {
+      alive = false
+    }
   }, [])
 
   // 🔎 Shared search across both datasets
@@ -76,7 +86,7 @@ export default function AdminPage() {
         contact?.name,
         contact?.email,
         contact?.mobile,
-        contact?.message,
+        contact?.message
       ]
         .join(' ')
         .toLowerCase()
@@ -96,7 +106,7 @@ export default function AdminPage() {
         booking?.checkIn?.date,
         booking?.checkIn?.time,
         booking?.checkOut?.date,
-        booking?.checkOut?.time,
+        booking?.checkOut?.time
       ]
         .join(' ')
         .toLowerCase()
@@ -110,18 +120,22 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-900 text-white">
+    <main className={`${mulish.className} min-h-screen bg-slate-900 text-white`}>
       {/* Top Bar */}
       <div className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-sm sticky top-0 z-30">
         <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
           <div className="min-w-0">
-            <h1 className={`${playfair.className} text-xl sm:text-2xl lg:text-3xl leading-tight`}>Admin Dashboard</h1>
-            <p className="text-slate-400 text-xs sm:text-sm mt-0.5">IT Extremes — Messages & Bookings</p>
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-semibold leading-tight">
+              Admin Dashboard
+            </h1>
+            <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
+              IT Extremes — Messages & Bookings
+            </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/"
-              className="hidden sm:inline text-slate-300 hover:text-amber-500 transition-colors text-sm"
+              className="hidden sm:inline text-slate-300 hover:text-[#01F5FF] transition-colors text-sm"
             >
               Back to site
             </Link>
@@ -129,14 +143,13 @@ export default function AdminPage() {
               onClick={logout}
               className="inline-flex items-center gap-2 rounded-md border border-slate-700 px-3 py-2 
              text-xs sm:text-sm text-slate-200 bg-slate-900 
-             hover:bg-slate-800 hover:border-amber-500 hover:text-amber-400
+             hover:bg-slate-800 hover:border-[#01F5FF] hover:text-[#01F5FF]
              transition-colors duration-200 ease-in-out"
               aria-label="Logout"
             >
               <LogOut className="w-4 h-4" />
               Logout
             </button>
-
           </div>
         </div>
       </div>
@@ -151,7 +164,7 @@ export default function AdminPage() {
                 aria-label="Search messages & bookings"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded-md border border-slate-700 bg-slate-800 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-amber-500 text-sm"
+                className="w-full pl-9 pr-3 py-2.5 rounded-md border border-slate-700 bg-slate-800 text-white placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#01F5FF] text-sm"
                 placeholder="Search by name, email, mobile, dates, message…"
               />
             </div>
@@ -160,12 +173,18 @@ export default function AdminPage() {
             <div className="flex flex-wrap gap-x-2 gap-y-1 text-xs sm:text-sm text-slate-400 sm:ml-auto">
               <span>
                 Messages:{' '}
-                <span className="text-amber-400 font-medium">{filteredMessages.length}</span> / {messages.length}
+                <span className="text-[#01F5FF] font-medium">
+                  {filteredMessages.length}
+                </span>{' '}
+                / {messages.length}
               </span>
               <span className="hidden sm:inline text-slate-600">|</span>
               <span>
                 Bookings:{' '}
-                <span className="text-amber-400 font-medium">{filteredBookings.length}</span> / {bookings.length}
+                <span className="text-[#01F5FF] font-medium">
+                  {filteredBookings.length}
+                </span>{' '}
+                / {bookings.length}
               </span>
             </div>
           </div>
@@ -174,7 +193,6 @@ export default function AdminPage() {
 
       {/* Content */}
       <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-10">
-        {/* Loading / Error */}
         {loading && (
           <div className="text-slate-400 text-sm">Loading data…</div>
         )}
@@ -182,36 +200,61 @@ export default function AdminPage() {
           <div className="text-rose-400 text-sm">Error: {error}</div>
         )}
 
-        {/* =================== Messages =================== */}
+        {/* Messages */}
         {!loading && !error && (
           <div>
             <header className="mb-3 sm:mb-4">
               <h2 className="text-lg sm:text-xl font-semibold">User Messages</h2>
-              <p className="text-slate-400 text-sm">Latest contact form submissions</p>
+              <p className="text-slate-400 text-sm">
+                Latest contact form submissions
+              </p>
             </header>
 
-            {/* Desktop/Tablet Table */}
+            {/* Desktop Table */}
             <div className="hidden md:block rounded-xl border border-slate-800 bg-slate-900/40">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[900px] text-sm">
                   <thead className="bg-slate-900/70 border-b border-slate-800">
                     <tr>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Created At</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Name</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Email</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Mobile</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Message</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Created At
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Name
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Email
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Mobile
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Message
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredMessages.map((m, idx) => (
-                      <tr key={idx} className="border-b border-slate-800/60 hover:bg-slate-800/40 align-top">
-                        <td className="px-4 py-3 text-slate-400">{formatDateTimeUTC(m.createdAt)}</td>
-                        <td className="px-4 py-3 text-slate-200">{m.contact?.name}</td>
-                        <td className="px-4 py-3 text-slate-300">{m.contact?.email}</td>
-                        <td className="px-4 py-3 text-slate-300">{m.contact?.mobile}</td>
+                      <tr
+                        key={idx}
+                        className="border-b border-slate-800/60 hover:bg-slate-800/40 align-top"
+                      >
+                        <td className="px-4 py-3 text-slate-400">
+                          {formatDateTimeUTC(m.createdAt)}
+                        </td>
+                        <td className="px-4 py-3 text-slate-200">
+                          {m.contact?.name}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300">
+                          {m.contact?.email}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300">
+                          {m.contact?.mobile}
+                        </td>
                         <td className="px-4 py-3 text-slate-200 max-w-[420px]">
-                          <span className="line-clamp-2">{m.contact?.message}</span>
+                          <span className="line-clamp-2">
+                            {m.contact?.message}
+                          </span>
                         </td>
                       </tr>
                     ))}
@@ -223,15 +266,25 @@ export default function AdminPage() {
             {/* Mobile Cards */}
             <div className="md:hidden grid grid-cols-1 gap-4">
               {filteredMessages.map((m, idx) => (
-                <article key={idx} className="rounded-xl border border-slate-800 bg-slate-900/40 p-4" aria-label={`Message from ${m.contact?.name || 'User'}`}>
+                <article
+                  key={idx}
+                  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4"
+                  aria-label={`Message from ${m.contact?.name || 'User'}`}
+                >
                   <div className="flex items-start justify-between gap-3 mb-2">
-                    <h3 className="font-semibold text-base leading-tight">{m.contact?.name}</h3>
-                    <span className="text-xs text-slate-400">{formatDateTimeUTC(m.createdAt)}</span>
+                    <h3 className="font-semibold text-base leading-tight">
+                      {m.contact?.name}
+                    </h3>
+                    <span className="text-xs text-slate-400">
+                      {formatDateTimeUTC(m.createdAt)}
+                    </span>
                   </div>
                   <dl className="text-sm text-slate-300 space-y-1">
                     <div className="flex justify-between gap-3">
                       <dt className="text-slate-400">Email</dt>
-                      <dd className="text-right break-all">{m.contact?.email}</dd>
+                      <dd className="text-right break-all">
+                        {m.contact?.email}
+                      </dd>
                     </div>
                     <div className="flex justify-between gap-3">
                       <dt className="text-slate-400">Mobile</dt>
@@ -248,35 +301,60 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* =================== Bookings =================== */}
+        {/* Bookings */}
         {!loading && !error && (
           <div>
             <header className="mb-3 sm:mb-4">
               <h2 className="text-lg sm:text-xl font-semibold">User Bookings</h2>
-              <p className="text-slate-400 text-sm">Upcoming and recent bookings</p>
+              <p className="text-slate-400 text-sm">
+                Upcoming and recent bookings
+              </p>
             </header>
 
-            {/* Desktop/Tablet Table */}
+            {/* Desktop Table */}
             <div className="hidden md:block rounded-xl border border-slate-800 bg-slate-900/40">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[1000px] text-sm">
                   <thead className="bg-slate-900/70 border-b border-slate-800">
                     <tr>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Created At</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Name</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Mobile</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Guests</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Check-In</th>
-                      <th className="text-left px-4 py-3 font-semibold text-slate-300">Check-Out</th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Created At
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Name
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Mobile
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Guests
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Check-In
+                      </th>
+                      <th className="text-left px-4 py-3 font-semibold text-slate-300">
+                        Check-Out
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredBookings.map((b, idx) => (
-                      <tr key={idx} className="border-b border-slate-800/60 hover:bg-slate-800/40">
-                        <td className="px-4 py-3 text-slate-400">{formatDateTimeUTC(b.createdAt)}</td>
-                        <td className="px-4 py-3 text-slate-200">{b.booking?.name}</td>
-                        <td className="px-4 py-3 text-slate-300">{b.booking?.mobile}</td>
-                        <td className="px-4 py-3 text-slate-300">{b.booking?.guests}</td>
+                      <tr
+                        key={idx}
+                        className="border-b border-slate-800/60 hover:bg-slate-800/40"
+                      >
+                        <td className="px-4 py-3 text-slate-400">
+                          {formatDateTimeUTC(b.createdAt)}
+                        </td>
+                        <td className="px-4 py-3 text-slate-200">
+                          {b.booking?.name}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300">
+                          {b.booking?.mobile}
+                        </td>
+                        <td className="px-4 py-3 text-slate-300">
+                          {b.booking?.guests}
+                        </td>
                         <td className="px-4 py-3 text-slate-300">
                           {b.booking?.checkIn?.date} • {b.booking?.checkIn?.time}
                         </td>
@@ -293,10 +371,18 @@ export default function AdminPage() {
             {/* Mobile Cards */}
             <div className="md:hidden grid grid-cols-1 gap-4">
               {filteredBookings.map((b, idx) => (
-                <article key={idx} className="rounded-xl border border-slate-800 bg-slate-900/40 p-4" aria-label={`Booking by ${b.booking?.name || 'User'}`}>
+                <article
+                  key={idx}
+                  className="rounded-xl border border-slate-800 bg-slate-900/40 p-4"
+                  aria-label={`Booking by ${b.booking?.name || 'User'}`}
+                >
                   <div className="flex items-start justify-between gap-3 mb-2">
-                    <h3 className="font-semibold text-base leading-tight">{b.booking?.name}</h3>
-                    <span className="text-xs text-slate-400">{formatDateTimeUTC(b.createdAt)}</span>
+                    <h3 className="font-semibold text-base leading-tight">
+                      {b.booking?.name}
+                    </h3>
+                    <span className="text-xs text-slate-400">
+                      {formatDateTimeUTC(b.createdAt)}
+                    </span>
                   </div>
                   <dl className="text-sm text-slate-300 space-y-1">
                     <div className="flex justify-between gap-3">
@@ -309,11 +395,15 @@ export default function AdminPage() {
                     </div>
                     <div className="flex justify-between gap-3">
                       <dt className="text-slate-400">Check-In</dt>
-                      <dd className="text-right">{b.booking?.checkIn?.date} • {b.booking?.checkIn?.time}</dd>
+                      <dd className="text-right">
+                        {b.booking?.checkIn?.date} • {b.booking?.checkIn?.time}
+                      </dd>
                     </div>
                     <div className="flex justify-between gap-3">
                       <dt className="text-slate-400">Check-Out</dt>
-                      <dd className="text-right">{b.booking?.checkOut?.date} • {b.booking?.checkOut?.time}</dd>
+                      <dd className="text-right">
+                        {b.booking?.checkOut?.date} • {b.booking?.checkOut?.time}
+                      </dd>
                     </div>
                   </dl>
                 </article>

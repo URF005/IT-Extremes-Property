@@ -2,20 +2,31 @@
 
 import { useState } from 'react'
 import { Phone, Mail, MapPin } from 'lucide-react'
-import { Playfair_Display } from 'next/font/google'
+import { Mulish } from 'next/font/google'
 
-const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
+const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
 function Button({ children, className = '', size = 'md', variant = 'default', ...props }) {
-  const base = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer'
-  const sizes = { xs: 'px-2 py-1 text-xs h-7', sm: 'px-3 py-2 text-sm h-8', md: 'px-4 py-2 text-base h-10', lg: 'px-6 py-3 text-lg h-12' }
+  const base =
+    'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer'
+  const sizes = {
+    xs: 'px-2 py-1 text-xs h-7',
+    sm: 'px-3 py-2 text-sm h-8',
+    md: 'px-4 py-2 text-base h-10',
+    lg: 'px-6 py-3 text-lg h-12',
+  }
   const variants = {
-    default: 'bg-amber-500 text-slate-900 hover:bg-amber-600 focus:ring-amber-500',
-    outline: 'border border-amber-500 text-amber-500 bg-transparent hover:bg-amber-500 hover:text-slate-900 focus:ring-amber-500',
-    link: 'text-amber-500 hover:text-amber-400 underline-offset-4 hover:underline bg-transparent p-0 h-auto'
+    default: 'bg-[#01F5FF] text-slate-900 hover:bg-[#00ddee] focus:ring-[#01F5FF]',
+    outline:
+      'border border-[#01F5FF] text-[#01F5FF] bg-transparent hover:bg-[#01F5FF] hover:text-slate-900 focus:ring-[#01F5FF]',
+    link:
+      'text-[#01F5FF] hover:text-[#00ddee] underline-offset-4 hover:underline bg-transparent p-0 h-auto',
   }
   return (
-    <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} {...props}>
+    <button
+      className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
+      {...props}
+    >
       {children}
     </button>
   )
@@ -32,7 +43,9 @@ export default function ContactSection() {
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    if (formErrors[name]) setFormErrors(prev => ({ ...prev, [name]: '' }))
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: '' }))
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -73,51 +86,62 @@ export default function ContactSection() {
   }
 
   return (
-    <section id="contact" className="py-20 sm:py-24 bg-slate-900">
+    <section id="contact" className={`${mulish.className} py-20 sm:py-24 bg-slate-900`}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 lg:mb-16">
-          <h2 className={`${playfair.className} text-3xl sm:text-4xl md:text-5xl text-white mb-6`}>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-6">
             Contact Us
           </h2>
-          <div className="w-16 h-0.5 bg-amber-500 mx-auto mb-6 lg:mb-8"></div>
+          <div className="w-16 h-0.5 bg-[#01F5FF] mx-auto mb-6 lg:mb-8"></div>
           <p className="text-slate-300 text-base lg:text-lg max-w-2xl mx-auto px-4">
             Get in touch with our team to find your perfect rental property
           </p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 max-w-4xl mx-auto">
+          {/* Contact Details */}
           <div className="space-y-6 lg:space-y-8">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+            {/* PHONE */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-[#01F5FF] rounded-full flex items-center justify-center flex-shrink-0">
                 <Phone className="w-6 h-6 text-slate-900" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <h3 className="text-white font-semibold">Phone</h3>
-                <p className="text-slate-300">+92-300-1234567</p>
+                <p className="text-slate-300 break-words">
+                  +92-303-3304987
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+            {/* EMAIL */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-[#01F5FF] rounded-full flex items-center justify-center flex-shrink-0">
                 <Mail className="w-6 h-6 text-slate-900" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <h3 className="text-white font-semibold">Email</h3>
-                <p className="text-slate-300">info@itextremes.com</p>
+                <p className="text-slate-300 break-words">
+                  Support@rentsinn.com
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-amber-500 rounded-full flex items-center justify-center">
+            {/* ADDRESS */}
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-[#01F5FF] rounded-full flex items-center justify-center flex-shrink-0">
                 <MapPin className="w-6 h-6 text-slate-900" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <h3 className="text-white font-semibold">Address</h3>
-                <p className="text-slate-300">Islamabad, Pakistan</p>
+                <p className="text-slate-300 break-words leading-relaxed">
+                  Street 39, Block C, Multi Gardens, B-17, Islamabad
+                </p>
               </div>
             </div>
           </div>
 
+          {/* Contact Form */}
           <div className="bg-slate-900 p-6 lg:p-8 rounded-lg">
             <form className="space-y-4 lg:space-y-6" onSubmit={handleSubmit}>
               <div>
@@ -127,9 +151,11 @@ export default function ContactSection() {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="Your Name"
-                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm sm:text-base"
+                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#01F5FF] text-sm sm:text-base"
                 />
-                {formErrors.name && (<p className="mt-1 text-sm text-red-400">{formErrors.name}</p>)}
+                {formErrors.name && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.name}</p>
+                )}
               </div>
               <div>
                 <input
@@ -138,9 +164,11 @@ export default function ContactSection() {
                   value={formData.email}
                   onChange={handleInputChange}
                   placeholder="Your Email"
-                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm sm:text-base"
+                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#01F5FF] text-sm sm:text-base"
                 />
-                {formErrors.email && (<p className="mt-1 text-sm text-red-400">{formErrors.email}</p>)}
+                {formErrors.email && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.email}</p>
+                )}
               </div>
               <div>
                 <input
@@ -149,9 +177,11 @@ export default function ContactSection() {
                   value={formData.mobile}
                   onChange={handleInputChange}
                   placeholder="Your Mobile"
-                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm sm:text-base"
+                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#01F5FF] text-sm sm:text-base"
                 />
-                {formErrors.mobile && (<p className="mt-1 text-sm text-red-400">{formErrors.mobile}</p>)}
+                {formErrors.mobile && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.mobile}</p>
+                )}
               </div>
               <div>
                 <textarea
@@ -160,14 +190,24 @@ export default function ContactSection() {
                   value={formData.message}
                   onChange={handleInputChange}
                   placeholder="Your Message"
-                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-sm sm:text-base"
+                  className="w-full p-3 bg-slate-800 border border-slate-700 rounded-md text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#01F5FF] text-sm sm:text-base"
                 ></textarea>
-                {formErrors.message && (<p className="mt-1 text-sm text-red-400">{formErrors.message}</p>)}
+                {formErrors.message && (
+                  <p className="mt-1 text-sm text-red-400">{formErrors.message}</p>
+                )}
               </div>
-              <Button type="submit" className="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-semibold" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="w-full bg-[#01F5FF] hover:bg-[#00ddee] text-slate-900 font-semibold"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? 'Sending...' : 'Send Message'}
               </Button>
-              {submitSuccess && (<p className="text-green-400 text-sm">Thanks! We saved your request and will get back to you shortly.</p>)}
+              {submitSuccess && (
+                <p className="text-green-400 text-sm">
+                  Thanks! We saved your request and will get back to you shortly.
+                </p>
+              )}
             </form>
           </div>
         </div>

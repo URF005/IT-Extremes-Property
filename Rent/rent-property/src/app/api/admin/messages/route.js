@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import fs from 'fs/promises'
 import path from 'path'
+import { Abhaya_Libre, Fresca, Yaldevi } from 'next/font/google'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -24,7 +25,7 @@ async function readJsonDir(dirPath) {
 
 export async function GET() {
   try {
-    // NOTE: folder name must be: src/userinformation
+    
     const dir = path.join(process.cwd(), 'src', 'useinformation')
     const data = await readJsonDir(dir)
     return NextResponse.json({ ok: true, data })

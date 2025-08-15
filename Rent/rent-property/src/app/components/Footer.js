@@ -1,10 +1,11 @@
 'use client'
 
+import Image from 'next/image'
 import { MapPin, Mail, Phone } from 'lucide-react'
-import { Playfair_Display } from 'next/font/google'
+import { Mulish } from 'next/font/google'
 import { FaFacebookF, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa'
 
-const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
+const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
 export default function Footer() {
   const scrollToSection = (sectionId) => {
@@ -18,27 +19,62 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-slate-950 py-12 sm:py-16">
+    <footer className={`${mulish.className} bg-slate-950 py-12 sm:py-16`}>
       <div className="container mx-auto px-4">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 mb-8 lg:mb-12">
           {/* Brand Info */}
           <div>
-            <div className="flex items-center space-x-2 mb-4 lg:mb-6">
-              <div className="w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center">
-                <span className="text-slate-900 font-bold text-sm">IT</span>
-              </div>
-              <span className={`${playfair.className} text-white text-xl`}>
-                IT Extremes
-              </span>
+            <div className="flex items-center space-x-3 mb-4 lg:mb-6">
+              <a href="/" aria-label="Rents Inn Home" className="inline-flex items-center">
+                <Image
+                  src="/logo.png"
+                  alt="Rents Inn logo"
+                  width={180}
+                  height={56}
+                  priority
+                  className="h-10 sm:h-12 w-auto object-contain"
+                  sizes="(max-width: 640px) 120px, (max-width: 1024px) 160px, 180px"
+                />
+              </a>
             </div>
+
             <p className="text-slate-400 mb-4 lg:mb-6 text-sm sm:text-base">
               Discover premium rentals in B-17 Islamabad, featuring handpicked homes in Multi Gardens and nearby sectors.
             </p>
+
             <div className="flex space-x-4">
-              <FaFacebookF className="w-5 h-5 text-slate-400 hover:text-amber-500 cursor-pointer transition-colors" />
-              <FaInstagram className="w-5 h-5 text-slate-400 hover:text-amber-500 cursor-pointer transition-colors" />
-              <FaYoutube className="w-5 h-5 text-slate-400 hover:text-amber-500 cursor-pointer transition-colors" />
-              <FaTiktok className="w-5 h-5 text-slate-400 hover:text-amber-500 cursor-pointer transition-colors" />
+              <a
+                href="https://www.facebook.com/share/1LghvgvnzK/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+              >
+                <FaFacebookF className="w-5 h-5 text-slate-400 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
+              <a
+                href="https://www.instagram.com/rentsinn05/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+              >
+                <FaInstagram className="w-5 h-5 text-slate-400 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
+              <a
+                href="https://www.youtube.com/channel/UC2OKQJ8YlbZG1Rsv0ZchEVQ"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="YouTube"
+              >
+                <FaYoutube className="w-5 h-5 text-slate-400 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
+              <a
+                href="https://www.tiktok.com/@rentsinn"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="TikTok"
+              >
+                <FaTiktok className="w-5 h-5 text-slate-400 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
             </div>
           </div>
 
@@ -49,7 +85,7 @@ export default function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection('home')}
-                  className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base"
+                  className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base"
                 >
                   Home
                 </button>
@@ -57,7 +93,7 @@ export default function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection('about')}
-                  className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base"
+                  className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base"
                 >
                   About Us
                 </button>
@@ -65,7 +101,7 @@ export default function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection('properties')}
-                  className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base"
+                  className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base"
                 >
                   Properties
                 </button>
@@ -73,7 +109,7 @@ export default function Footer() {
               <li>
                 <button
                   onClick={() => scrollToSection('contact')}
-                  className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base"
+                  className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base"
                 >
                   Contact
                 </button>
@@ -86,19 +122,19 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4 lg:mb-6">Location</h4>
             <ul className="space-y-2 lg:space-y-3">
               <li>
-                <a className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base">
+                <span className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base">
                   Islamabad
-                </a>
+                </span>
               </li>
               <li>
-                <a className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base">
-                  B-17
-                </a>
+                <span className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base">
+                  Sector B-17
+                </span>
               </li>
               <li>
-                <a className="text-slate-400 hover:text-amber-500 transition-colors text-sm sm:text-base">
-                  Capital Square
-                </a>
+                <span className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base">
+                  Sector D-17
+                </span>
               </li>
             </ul>
           </div>
@@ -108,22 +144,23 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4 lg:mb-6">Contact Info</h4>
             <div className="space-y-3 lg:space-y-4">
               <div className="flex items-center space-x-3">
-                <MapPin className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                <span className="text-slate-400 text-sm sm:text-base">
-                  Islamabad, Pakistan
-                </span>
+                <MapPin className="w-5 h-5 text-[#01F5FF] flex-shrink-0" />
+                <span className="text-slate-400 text-sm sm:text-base">Islamabad, Pakistan</span>
               </div>
               <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                <span className="text-slate-400 text-sm sm:text-base">
-                  +92-300-1234567
-                </span>
+                <Phone className="w-5 h-5 text-[#01F5FF] flex-shrink-0" />
+                <a href="tel:+923033304987" className="text-slate-400 text-sm sm:text-base hover:text-[#01F5FF]">
+                  +92-303-3304987
+                </a>
               </div>
               <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                <span className="text-slate-400 text-sm sm:text-base">
-                  info@itextremes.com
-                </span>
+                <Mail className="w-5 h-5 text-[#01F5FF] flex-shrink-0" />
+                <a
+                  href="mailto:support@rentsinn.com"
+                  className="text-slate-400 text-sm sm:text-base hover:text-[#01F5FF]"
+                >
+                  support@rentsinn.com
+                </a>
               </div>
             </div>
           </div>
@@ -133,7 +170,7 @@ export default function Footer() {
         <div className="border-t border-slate-800 pt-6 lg:pt-8">
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <p className="text-slate-400 text-sm text-center">
-              © 2024 IT Extremes. All rights reserved.
+              © {new Date().getFullYear()} Rents Inn. All rights reserved.
             </p>
           </div>
         </div>
