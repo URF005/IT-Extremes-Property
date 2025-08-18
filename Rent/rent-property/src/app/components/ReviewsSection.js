@@ -25,13 +25,13 @@ function ClientReviewsSlider() {
     {
       name: "Ahmed Hassan",
       role: "Software Engineer",
-      content: "Found my ideal apartment at Capital Square through Rents Inn. The modern amenities and prime location are perfect.",
+      content: "Found my ideal apartment at Capital Square through Rentsin. The modern amenities and prime location are perfect.",
       rating: 5
     },
     {
       name: "Fatima Khan",
       role: "Marketing Manager",
-      content: "Rents Inn secured me a beautiful house in Block B. Their knowledge of Islamabad's sectors is impressive.",
+      content: "Rentsin secured me a beautiful house in Block B. Their knowledge of Islamabad's sectors is impressive.",
       rating: 5
     },
     {
@@ -43,7 +43,7 @@ function ClientReviewsSlider() {
     {
       name: "Ayesha Raza",
       role: "University Professor",
-      content: "As a newcomer to Islamabad, Rents Inn perfectly matched me with Capital Square's secure community.",
+      content: "As a newcomer to Islamabad, Rentsin perfectly matched me with Capital Square's secure community.",
       rating: 5
     }
   ]

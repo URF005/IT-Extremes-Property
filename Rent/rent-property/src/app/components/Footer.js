@@ -170,7 +170,7 @@ export default function Footer() {
         <div className="border-t border-slate-800 pt-6 lg:pt-8">
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <p className="text-slate-400 text-sm text-center">
-              © {new Date().getFullYear()} Rents Inn. All rights reserved.
+              © {new Date().getFullYear()} Rentsin. All rights reserved.
             </p>
           </div>
         </div>

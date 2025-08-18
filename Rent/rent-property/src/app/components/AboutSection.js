@@ -17,7 +17,7 @@ export default function AboutSection() {
           {/* Text */}
           <div className="flex-1 space-y-6 sm:space-y-8">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-              About <span className="text-[#01F5FF]">Rents Inn</span>
+              About <span className="text-[#01F5FF]">Rentsin</span>
             </h2>
             <div className="w-16 h-0.5 bg-[#01F5FF]" />
             <p className="text-slate-300 text-base md:text-lg leading-relaxed">
