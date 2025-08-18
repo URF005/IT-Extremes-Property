@@ -300,12 +300,12 @@ export default function HeroSection() {
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 flex-1 flex flex-col justify-center">
         <div className="space-y-6 sm:space-y-8 mb-8">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-bold animate-fade-in-up">
-            Rooms/ Apartment for rent in B17
+            Rooms/ Apartment for rent in Islamabad
           </h1>
 
           <div className="w-24 h-0.5 bg-[#01F5FF] mx-auto animate-fade-in-up animation-delay-200"></div>
           <p className="text-lg sm:text-xl md:text-2xl text-slate-200 max-w-2xl mx-auto px-4 leading-relaxed animate-fade-in-up animation-delay-400">
-            Discover premium rentals in Islamabad - from luxury apartments to comfortable homes in B-17 Islamabad
+            Discover premium rentals in Islamabad - from luxury apartments to comfortable homes in B-17 & D-17 Islamabad
           </p>
           <button
             onClick={() => scrollToSection('properties')}

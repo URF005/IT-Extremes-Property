@@ -39,7 +39,7 @@ export default function Footer() {
             </div>
 
             <p className="text-slate-400 mb-4 lg:mb-6 text-sm sm:text-base">
-              Discover premium rentals in B-17 Islamabad, featuring handpicked homes in Multi Gardens and nearby sectors.
+              Discover premium rentals in B-17 & D-17 Islamabad, featuring handpicked homes in Multi Gardens and nearby sectors.
             </p>
 
             <div className="flex space-x-4">
@@ -68,7 +68,7 @@ export default function Footer() {
                 <FaYoutube className="w-5 h-5 text-slate-400 hover:text-[#01F5FF] cursor-pointer transition-colors" />
               </a>
               <a
-                href="https://www.tiktok.com/@rentsinn"
+                href="https://www.tiktok.com/@rentsinn5?_t=ZS-8yyM6u6kwqH&_r=1"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="TikTok"

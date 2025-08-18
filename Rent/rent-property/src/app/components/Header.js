@@ -15,6 +15,14 @@ const ADMIN_CREDENTIALS = {
   password: process.env.NEXT_PUBLIC_ADMIN_PASSWORD || '',
 }
 
+const SUPPORT_EMAIL = 'Support@rentsinn.com'
+
+// Build a Gmail compose URL
+const getGmailComposeUrl = (to, subject = '', body = '') =>
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(
+    subject
+  )}&body=${encodeURIComponent(body)}`
+
 export default function Header() {
   const router = useRouter()
   const [isScrolled, setIsScrolled] = useState(false)
@@ -83,9 +91,8 @@ export default function Header() {
     <div className={mulish.className}>
       {/* Top Header Bar */}
       <div
-        className={`fixed top-0 w-full z-50 bg-slate-800 text-white py-2 px-4 transition-all duration-300 ${
-          isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0'
-        }`}
+        className={`fixed top-0 w-full z-50 bg-slate-800 text-white py-2 px-4 transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0'
+          }`}
       >
         <div className="container mx-auto">
           {/* Desktop/tablet */}
@@ -98,11 +105,20 @@ export default function Header() {
               </div>
               <div className="flex items-center space-x-2 min-w-0">
                 <Mail className="w-4 h-4 text-[#01F5FF]" />
-                <span className="whitespace-nowrap">Support@rentsinn.com</span>
+                {/* EMAIL -> Opens Gmail compose in new tab */}
+                <a
+                  href={getGmailComposeUrl(SUPPORT_EMAIL)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="whitespace-nowrap hover:text-[#01F5FF] transition-colors underline-offset-2"
+                  title={`Email ${SUPPORT_EMAIL}`}
+                >
+                  {SUPPORT_EMAIL}
+                </a>
               </div>
               <div className="flex items-center space-x-2 min-w-0">
                 <Phone className="w-4 h-4 text-[#01F5FF]" />
-                <a href="tel:+923001234567" className="whitespace-nowrap hover:text-[#01F5FF] transition-colors">
+                <a href="tel:+923033304987" className="whitespace-nowrap hover:text-[#01F5FF] transition-colors">
                   +92-303-3304987
                 </a>
               </div>
@@ -138,7 +154,14 @@ export default function Header() {
                 >
                   <FaYoutube className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
                 </a>
-                <FaTiktok className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+                <a
+                  href="https://www.tiktok.com/@rentsinn5?_t=ZS-8yyM6u6kwqH&_r=1"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FaTiktok className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+                </a>
+
               </div>
             </div>
           </div>
@@ -177,7 +200,14 @@ export default function Header() {
               >
                 <FaYoutube className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
               </a>
-              <FaTiktok className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+
+              <a
+                href="https://www.tiktok.com/@rentsinn5?_t=ZS-8yyM6u6kwqH&_r=1"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <FaTiktok className="w-4 h-4 hover:text-[#01F5FF] cursor-pointer transition-colors" />
+              </a>
             </div>
           </div>
         </div>
@@ -185,9 +215,8 @@ export default function Header() {
 
       {/* Main Header */}
       <header
-        className={`fixed w-full z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 transition-all duration-300 ${
-          isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0 top-8'
-        }`}
+        className={`fixed w-full z-40 bg-slate-900/95 backdrop-blur-sm border-b border-slate-800 transition-all duration-300 ${isScrolled ? 'opacity-0 pointer-events-none -translate-y-full' : 'opacity-100 translate-y-0 top-8'
+          }`}
       >
         <div className="container mx-auto px-4 py-4">
           {/* Desktop Navigation */}

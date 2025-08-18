@@ -100,9 +100,10 @@ export default function PropertiesSection() {
   }
 
   const properties = useMemo(() => ([
+    // 1) Existing gallery card with 7 photos
     {
       mediaType: 'imageGallery',
-      name: 'Apartment',
+      name: 'City Centre AC Apartment',
       location: 'City Centre D-17 Islamabad',
       images: [
         '/img6.jpeg',
@@ -116,21 +117,43 @@ export default function PropertiesSection() {
       description: '2-bedroom apartment with one AC',
       price: 'PKR 14,500/month',
     },
+
+    // 2) Highlighted gallery card with discount
+    {
+      mediaType: 'imageGallery',
+      name: 'Modern Dream ',
+      location: 'Capital Square Block D',
+      images: [
+        '/img1.jpeg',
+        '/img2.jpeg',
+        '/img3.jpeg',
+        '/img4.jpeg',
+      ],
+      description: 'Apartment with modern interior',
+      // highlight & discount meta
+      highlight: true,
+      discountPercent: 45,
+      priceRegular: 'PKR 10,900',
+      priceDiscounted: 'PKR 5,950',
+      priceNote: 'Limited time',
+    },
+
+    // 3) Video cards
     {
       mediaType: 'video',
-      name: 'Apartment',
+      name: 'Premium B-17 Apartment',
       location: 'Capital Square B-17',
       video: '/Apartment1.mp4',
-      poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRyy5f1rR79owykEwoWhPnF-tyPFxUYMgx6g&s',
+      poster: '/img13.jpg',
       description: 'Premium apartment available for rent',
       price: 'PKR 24,000/month',
     },
     {
       mediaType: 'video',
-      name: 'Apartment',
+      name: 'Spacious B-17 Apartment',
       location: 'Capital Square B-17',
       video: '/Apartment2.mp4',
-      poster: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQRyy5f1rR79owykEwoWhPnF-tyPFxUYMgx6g&s',
+      poster: '/img14.jpg',
       description: 'Premium apartment available for rent',
       price: 'PKR 24,000/month',
     },
@@ -142,7 +165,7 @@ export default function PropertiesSection() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 lg:mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl text-white font-bold mb-6">
-              Other Properties
+              Properties
             </h2>
             <div className="w-16 h-0.5 bg-[#01F5FF] mx-auto mb-6 lg:mb-8"></div>
           </div>
@@ -151,12 +174,36 @@ export default function PropertiesSection() {
             {properties.map((property, index) => {
               const isGallery = property.mediaType === 'imageGallery'
               const isVideo = property.mediaType === 'video'
+              const isHighlight = !!property.highlight
 
               return (
                 <Card
                   key={index}
-                  className="border-slate-200 overflow-hidden group hover:transform hover:scale-105 transition-all duration-300"
+                  className={[
+                    'overflow-hidden group hover:transform hover:scale-105 transition-all duration-300',
+                    isHighlight
+                      ? 'relative border-transparent bg-white shadow-lg ring-2 ring-offset-2 ring-[#01F5FF]/80 shadow-cyan-500/20'
+                      : 'border-slate-200'
+                  ].join(' ')}
                 >
+                  {/* Flashy discount ribbon for the highlighted property */}
+                  {isHighlight && (
+                    <div className="absolute left-0 top-4 z-20">
+                      <div className="relative">
+                        <div className="absolute -inset-0.5 bg-gradient-to-r from-[#01F5FF] via-cyan-400 to-emerald-300 blur opacity-70 rounded-r-full"></div>
+                        <div className="relative inline-flex items-center gap-2 px-3 py-1.5 bg-slate-900/90 text-white rounded-r-full">
+                          <span className="relative inline-flex">
+                            <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-full bg-[#01F5FF] opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#01F5FF]"></span>
+                          </span>
+                          <span className="text-xs font-semibold tracking-wide">
+                            {property.discountPercent}% OFF • {property.priceNote}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="relative h-48 sm:h-56 lg:h-64 bg-slate-100">
                     {isVideo ? (
                       <>
@@ -180,16 +227,17 @@ export default function PropertiesSection() {
                     ) : isGallery ? (
                       <>
                         <Image
-                          src={'/img9.jpeg'}
+                          src={property.images[2]}
                           alt={`${property.name} photo`}
                           fill
-                          className="object-cover group-hover:scale-110 transition-transform duration-300"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className={`object-cover group-hover:scale-110 transition-transform duration-300 ${isHighlight ? 'contrast-110' : ''}`}
                           priority={index === 0}
                         />
                         <button
                           type="button"
                           onClick={() => {
-                            const previewSrc = '/img9.jpeg'
+                            const previewSrc = property.images[0]
                             const previewIndex = property.images.indexOf(previewSrc)
                             openGallery(
                               property.images,
@@ -204,7 +252,7 @@ export default function PropertiesSection() {
                         <button
                           type="button"
                           onClick={() => {
-                            const previewSrc = '/img9.jpeg'
+                            const previewSrc = property.images[0]
                             const previewIndex = property.images.indexOf(previewSrc)
                             openGallery(
                               property.images,
@@ -212,7 +260,12 @@ export default function PropertiesSection() {
                               property.name
                             )
                           }}
-                          className="absolute bottom-3 right-3 rounded-full bg-black/60 hover:bg-black/70 text-white text-xs sm:text-sm px-3 py-1.5 shadow-md"
+                          className={[
+                            'absolute bottom-3 right-3 rounded-full text-white text-xs sm:text-sm px-3 py-1.5 shadow-md',
+                            isHighlight
+                              ? 'bg-gradient-to-r from-[#01F5FF] via-cyan-400 to-emerald-300 hover:from-cyan-400 hover:to-[#01F5FF]'
+                              : 'bg-black/60 hover:bg-black/70'
+                          ].join(' ')}
                         >
                           View photos ({property.images.length})
                         </button>
@@ -221,8 +274,13 @@ export default function PropertiesSection() {
                   </div>
 
                   <CardContent className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-xl text-slate-900 font-semibold mb-2">
+                    <h3 className="text-lg sm:text-xl text-slate-900 font-semibold mb-2 flex items-center gap-2">
                       {property.name}
+                      {isHighlight && (
+                        <span className="inline-flex items-center rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold px-2 py-0.5 border border-emerald-200">
+                          Hot Deal
+                        </span>
+                      )}
                     </h3>
                     <p className="text-black text-sm mb-2 font-medium">
                       {property.location}
@@ -230,11 +288,35 @@ export default function PropertiesSection() {
                     <p className="text-black text-sm mb-4">
                       {property.description}
                     </p>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                      <span className="text-slate-900 font-semibold text-sm sm:text-base">
-                        From {property.price}
-                      </span>
-                    </div>
+
+                    {/* Pricing */}
+                    {!isHighlight ? (
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <span className="text-slate-900 font-semibold text-sm sm:text-base">
+                          From {property.price}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="text-slate-500 line-through text-sm">
+                            Regular price {property.priceRegular}
+                          </span>
+                          <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-emerald-700 text-xs font-semibold">
+                            {property.discountPercent}% OFF
+                          </span>
+                          <span className="inline-flex items-center rounded-full border border-cyan-200 bg-cyan-50 px-2.5 py-0.5 text-cyan-700 text-xs font-semibold">
+                            {property.priceNote}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-xl sm:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#01F5FF] via-cyan-500 to-emerald-400">
+                            {property.priceDiscounted}
+                          </span>
+                          <span className="text-slate-500 text-sm">now</span>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )

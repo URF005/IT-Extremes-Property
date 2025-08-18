@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function FloatingContacts() {
   const PHONE = "+923033304987";
-  const WHATSAPP = "++923033304987";
+  const WHATSAPP = "+923033304987";
 
   const waHref = `https://wa.me/${WHATSAPP.replace(/[^\d]/g, "")}`;
   const telHref = `tel:${PHONE.replace(/\s/g, "")}`;
@@ -18,6 +18,7 @@ export default function FloatingContacts() {
         aria-label="Chat on WhatsApp"
       >
         <Image
+        
           src="/ws.png"
           alt="WhatsApp"
           width={28}

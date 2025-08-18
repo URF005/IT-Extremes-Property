@@ -136,13 +136,11 @@ body {
 }
 
 .floating-btn {
-  background: white;
-  border-radius: 50%;
-  width: clamp(44px, 5.5vw, 56px);
-  height: clamp(44px, 5.5vw, 56px);
+
   display: grid;
   place-items: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  border-radius: 50px;
 }
 
 @media (max-width: 420px) {
