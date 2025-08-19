@@ -99,6 +99,47 @@ function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We�
   )
 }
 
+/* --------------------------- Datepicker Enhancements --------------------- */
+/** Custom header: clean, no arrows, month/year dropdowns */
+function CustomHeader({ date, changeYear, changeMonth }) {
+  const years = useMemo(() => {
+    const y = new Date().getFullYear()
+    const arr = []
+    for (let i = y - 50; i <= y + 10; i++) arr.push(i)
+    return arr
+  }, [])
+  const months = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+  ]
+
+  return (
+    <div className="flex items-center justify-between px-3 py-2 border-b bg-white sticky top-0">
+      <div className="text-slate-900 font-semibold text-sm">
+        {months[date.getMonth()]} {date.getFullYear()}
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          aria-label="Month"
+          className="rounded-md border border-slate-300 text-sm px-2 py-1 bg-white"
+          value={months[date.getMonth()]}
+          onChange={(e) => changeMonth(months.indexOf(e.target.value))}
+        >
+          {months.map((m) => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <select
+          aria-label="Year"
+          className="rounded-md border border-slate-300 text-sm px-2 py-1 bg-white"
+          value={date.getFullYear()}
+          onChange={(e) => changeYear(Number(e.target.value))}
+        >
+          {years.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+    </div>
+  )
+}
+
 /* ------------------------------ Booking Widget --------------------------- */
 function BookingWidget({ defaultGuests = 1, onBooked }) {
   const now = useMemo(() => new Date(), [])
@@ -121,7 +162,6 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
     const minCo = addHours(date, 1)
     if (!(checkOut > minCo)) setCheckOut(minCo)
   }
-
   const handleCheckOutChange = (date) => {
     if (!date) return
     const minCo = addHours(checkIn, 1)
@@ -200,75 +240,35 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
     }
   }
 
-  // Common DatePicker props (safe for Floating UI)
-  const commonPickerProps = {
+  // --- Enhanced DatePicker config (portal everywhere; no arrows; custom header) ---
+  const desktopTimeProps = {
     showTimeSelect: true,
     timeIntervals: 15,
+  }
+  const mobileTimeProps = {
+    showTimeInput: true,
+    timeInputLabel: 'Time',
+  }
+
+  const commonPickerProps = {
     dateFormat: 'yyyy-MM-dd h:mm aa',
-    popperPlacement: isSmall ? 'bottom' : 'bottom-start',
-    popperClassName: 'z-[100] max-w-full',
-    withPortal: isSmall,                  // Full-screen overlay on phones
+    popperPlacement: 'bottom-start',
+    withPortal: true,                     // <— ALWAYS portal to avoid clipping on any screen
     portalId: 'booking-datepicker-portal',
-    shouldCloseOnScroll: true,
+    shouldCloseOnScroll: false,           // keep open on scroll
     dropdownMode: 'select',
-    showMonthDropdown: true,
-    showYearDropdown: true,
+    showMonthDropdown: false,             // handled by custom header
+    showYearDropdown: false,              // handled by custom header
     scrollableYearDropdown: true,
     yearDropdownItemNumber: 60,
     calendarClassName: 'booking-calendar',
-    renderCustomHeader: ({
-      date,
-      decreaseMonth,
-      increaseMonth,
-      changeYear,
-      changeMonth,
-      prevMonthButtonDisabled,
-      nextMonthButtonDisabled,
-    }) => (
-      <div className="flex items-center justify-between px-3 py-2">
-        <button onClick={decreaseMonth} disabled={prevMonthButtonDisabled} className="px-2 py-1 rounded hover:bg-slate-100">
-          ‹
-        </button>
-        <div className="flex items-center gap-2">
-          <select
-            className="border rounded px-2 py-1 text-sm"
-            value={date.getMonth()}
-            onChange={({ target: { value } }) => changeMonth(Number(value))}
-          >
-            {Array.from({ length: 12 }).map((_, i) => (
-              <option key={i} value={i}>
-                {new Date(0, i).toLocaleString(undefined, { month: 'long' })}
-              </option>
-            ))}
-          </select>
-          <select
-            className="border rounded px-2 py-1 text-sm"
-            value={date.getFullYear()}
-            onChange={({ target: { value } }) => changeYear(Number(value))}
-          >
-            {Array.from({ length: 60 }).map((_, i) => {
-              const y = new Date().getFullYear() - 30 + i
-              return (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              )
-            })}
-          </select>
-        </div>
-        <button onClick={increaseMonth} disabled={nextMonthButtonDisabled} className="px-2 py-1 rounded hover:bg-slate-100">
-          ›
-        </button>
-      </div>
-    ),
+    fixedHeight: true,                    // consistent month height
+    renderCustomHeader: (props) => <CustomHeader {...props} />,
   }
 
   return (
     <>
-      {/* Responsive grid:
-          - base: 1 column (stacked)
-          - md: 2 columns
-          - xl: 6 columns (original layout) */}
+      {/* Responsive grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 items-end">
         {/* Check-in */}
         <div className="space-y-2">
@@ -277,6 +277,7 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
             selected={checkIn}
             onChange={handleCheckInChange}
             {...commonPickerProps}
+            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
             minDate={minCheckInDate}
             minTime={sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn)}
             maxTime={endOfDay(checkIn)}
@@ -292,6 +293,7 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
             selected={checkOut}
             onChange={handleCheckOutChange}
             {...commonPickerProps}
+            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
             minDate={minCheckoutDate}
             minTime={sameDay(checkOut, minCheckoutDate) ? minCheckoutDate : startOfDay(checkOut)}
             maxTime={endOfDay(checkOut)}
@@ -340,11 +342,10 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
           {errors.name && <p className="text-xs text-red-500 -mt-1">{errors.name}</p>}
         </div>
 
-        {/* Mobile + Book Now (RESPONSIVE FIX) */}
+        {/* Mobile + Book Now */}
         <div className="space-y-2 md:col-span-2 xl:col-span-2">
           <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">MOBILE</label>
 
-          {/* On small screens: stack; from sm and up: grid with input flexing and button auto width */}
           <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
             <input
               type="tel"
@@ -374,63 +375,128 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
 
       <FloatingAlert show={savedOk} onClose={() => setSavedOk(false)} />
 
-      {/* Global responsive tweaks for react-datepicker & layout stability */}
+      {/* Global styles for enhanced, responsive, scroll-safe react-datepicker */}
       <style jsx global>{`
-        /* Keep popper above cards & modals */
-        .react-datepicker-popper {
+        /* Portal overlay: center on all screens so top/bottom never clip */
+        .react-datepicker__portal {
+          position: fixed;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          background: rgba(0, 0, 0, 0.65);
+          padding: 16px;
           z-index: 100 !important;
-          max-width: 100%;
         }
+
+        /* Calendar container: scrollable, capped to viewport height */
+        .react-datepicker__portal .react-datepicker,
         .booking-calendar {
-          width: 100%;
-          max-width: 420px;
+          width: min(92vw, 460px);
+          max-height: calc(92svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+          background: #fff;
+          border-radius: 16px;
+          overflow: auto; /* enable internal scroll if needed */
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 20px 40px rgba(2, 6, 23, 0.18);
         }
-        /* Portal layout for small screens */
+
+        /* Remove built-in prev/next arrows completely */
+        .react-datepicker__navigation,
+        .react-datepicker__navigation--previous,
+        .react-datepicker__navigation--next {
+          display: none !important;
+        }
+
+        /* Clean header + sticky top inside scroll */
+        .react-datepicker__header {
+          background: #fff;
+          border-bottom: 1px solid #e5e7eb;
+          padding: 0;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        }
+        .react-datepicker__current-month { display: none; } /* using custom header */
+
+        /* Day grid sizing */
+        .react-datepicker__day,
+        .react-datepicker__day-name {
+          width: 2.25rem;
+          line-height: 2.25rem;
+          margin: 0.15rem;
+          font-size: 0.95rem;
+        }
+        .react-datepicker__day--selected,
+        .react-datepicker__day--keyboard-selected {
+          background: #01F5FF !important;
+          color: #0f172a !important;
+          border-radius: 8px !important;
+        }
+        .react-datepicker__day:hover {
+          background: #e6fafe;
+          border-radius: 8px;
+        }
+
+        /* Time list (desktop) */
+        @media (min-width: 641px) {
+          .react-datepicker {
+            display: inline-flex;
+            align-items: stretch;
+            min-height: 360px;
+          }
+          .react-datepicker__month-container {
+            min-width: 300px;
+          }
+          .react-datepicker__time-container {
+            border-left: 1px solid #e5e7eb;
+            width: 120px;
+            position: sticky;
+            top: 0;
+            background: #fff;
+          }
+          .react-datepicker__time, .react-datepicker__time-box {
+            width: 120px;
+            max-height: 320px;
+          }
+          .react-datepicker__time-list { scrollbar-width: thin; }
+          .react-datepicker__time-list-item--selected {
+            background: #01F5FF !important;
+            color: #0f172a !important;
+            border-radius: 6px;
+          }
+        }
+
+        /* Mobile typography & inputs */
         @media (max-width: 640px) {
-          .react-datepicker__portal {
-            position: fixed;
-            inset: 0;
-            display: grid;
-            place-items: center;
-            background: rgba(0, 0, 0, 0.65);
-            padding: 12px;
-            z-index: 100 !important;
-          }
-          .react-datepicker__portal .react-datepicker {
-            width: min(92vw, 420px);
-            border-radius: 12px;
-            overflow: hidden;
-          }
-          .react-datepicker__time-container,
-          .react-datepicker__time {
-            max-height: 260px;
-          }
-          .react-datepicker__time-list {
-            padding-right: 6px;
-          }
-          .react-datepicker__current-month,
-          .react-datepicker-time__header,
           .react-datepicker__day-name,
-          .react-datepicker__day,
-          .react-datepicker__time-list-item {
+          .react-datepicker__day {
+            font-size: 15px;
+          }
+          .react-datepicker__triangle { display: none; }
+          .react-datepicker__input-time-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 14px env(safe-area-inset-bottom);
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+            position: sticky;
+            bottom: 0; /* stays visible while calendar scrolls */
+          }
+          .react-datepicker-time__input {
+            width: 120px;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
             font-size: 14px;
           }
-          .react-datepicker__navigation {
-            width: 40px;
-            height: 40px;
-          }
-          .react-datepicker__navigation-icon::before {
-            border-width: 3px;
-          }
         }
-        /* Medium screens: keep the popper tight so it doesn't overflow cards */
+
+        /* Medium screens: cap time list height to avoid overflow */
         @media (min-width: 641px) and (max-width: 1024px) {
-          .react-datepicker {
-            width: 360px;
-          }
           .react-datepicker__time-container,
           .react-datepicker__time {
-            max-height: 280px;
+            max-height: 300px;
           }
         }
       `}</style>
@@ -440,7 +506,7 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
 
 /* ------------------------------- Main Section ---------------------------- */
 export default function PropertiesSection() {
-  const [modal, setModal] = useState(null) // {type: 'video' | 'gallery' | 'booking', ...}
+  const [modal, setModal] = useState(null)
   const isOpen = !!modal
 
   const openVideo = useCallback((src, title) => setModal({ type: 'video', src, title }), [])
@@ -454,9 +520,7 @@ export default function PropertiesSection() {
     const { style } = document.body
     const prev = style.overflow
     style.overflow = 'hidden'
-    return () => {
-      style.overflow = prev
-    }
+    return () => { style.overflow = prev }
   }, [isOpen])
 
   // Keyboard controls for gallery
@@ -540,7 +604,6 @@ export default function PropertiesSection() {
     []
   )
 
-  // Sort so highlighted card appears first
   const sortedProperties = useMemo(() => {
     const arr = [...properties]
     arr.sort((a, b) => (b.highlight ? 1 : 0) - (a.highlight ? 1 : 0))
@@ -741,9 +804,16 @@ export default function PropertiesSection() {
               >
                 <div
                   className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl bg-black select-none"
-                  onTouchStart={onTouchStart}
+                  onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
                   onTouchMove={(e) => setTouchEndX(e.touches[0].clientX)}
-                  onTouchEnd={onTouchEnd}
+                  onTouchEnd={() => {
+                    if (touchStartX === null || touchEndX === null) return
+                    const delta = touchEndX - touchStartX
+                    const threshold = 40
+                    if (delta > threshold) prevImage()
+                    if (delta < -threshold) nextImage()
+                    setTouchStartX(null); setTouchEndX(null)
+                  }}
                 >
                   <img
                     src={modal.images[modal.index]}

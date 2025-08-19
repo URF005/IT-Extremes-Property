@@ -53,10 +53,68 @@ const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0
 const endOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 45, 0, 0) // 15-min step
 const sameDay = (a, b) => a.toDateString() === b.toDateString()
 
+/* -------------------------- Responsive helper ---------------------------- */
+function useIsSmallScreen(breakpoint = 640) {
+  const [isSmall, setIsSmall] = useState(false)
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const mql = window.matchMedia(`(max-width: ${breakpoint}px)`)
+    const onChange = (e) => setIsSmall(e.matches)
+    setIsSmall(mql.matches)
+    mql.addEventListener ? mql.addEventListener('change', onChange) : mql.addListener(onChange)
+    return () => {
+      mql.removeEventListener ? mql.removeEventListener('change', onChange) : mql.removeListener(onChange)
+    }
+  }, [breakpoint])
+  return isSmall
+}
+
+/* --------------------------- Datepicker Enhancements --------------------- */
+/** Custom header: clean, no arrows, month/year dropdowns */
+function CustomHeader({ date, changeYear, changeMonth }) {
+  const years = useMemo(() => {
+    const y = new Date().getFullYear()
+    const arr = []
+    for (let i = y - 50; i <= y + 10; i++) arr.push(i)
+    return arr
+  }, [])
+  const months = [
+    'January','February','March','April','May','June',
+    'July','August','September','October','November','December'
+  ]
+
+  return (
+    <div className="flex items-center justify-between px-3 py-2 border-b bg-white sticky top-0">
+      <div className="text-slate-900 font-semibold text-sm">
+        {months[date.getMonth()]} {date.getFullYear()}
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          aria-label="Month"
+          className="rounded-md border border-slate-300 text-sm px-2 py-1 bg-white"
+          value={months[date.getMonth()]}
+          onChange={(e) => changeMonth(months.indexOf(e.target.value))}
+        >
+          {months.map((m) => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <select
+          aria-label="Year"
+          className="rounded-md border border-slate-300 text-sm px-2 py-1 bg-white"
+          value={date.getFullYear()}
+          onChange={(e) => changeYear(Number(e.target.value))}
+        >
+          {years.map((y) => <option key={y} value={y}>{y}</option>)}
+        </select>
+      </div>
+    </div>
+  )
+}
+
 /* ------------------------------ Booking Widget --------------------------- */
 function BookingWidget() {
   const now = useMemo(() => new Date(), [])
   const defaultCheckout = useMemo(() => addHours(now, 24), [now])
+  const isSmall = useIsSmallScreen(640)
 
   const [checkIn, setCheckIn] = useState(now)
   const [checkOut, setCheckOut] = useState(defaultCheckout)
@@ -150,6 +208,26 @@ function BookingWidget() {
     }
   }
 
+  // --- Enhanced DatePicker config (portal everywhere; custom header; no arrows) ---
+  const desktopTimeProps = { showTimeSelect: true, timeIntervals: 15 }
+  const mobileTimeProps = { showTimeInput: true, timeInputLabel: 'Time' }
+
+  const commonPickerProps = {
+    dateFormat: 'yyyy-MM-dd h:mm aa',
+    popperPlacement: 'bottom-start',
+    withPortal: true,                 // always portal => no clipping on any screen
+    portalId: 'hero-datepicker-portal',
+    shouldCloseOnScroll: false,       // keep open on scroll
+    dropdownMode: 'select',
+    showMonthDropdown: false,         // custom header handles this
+    showYearDropdown: false,          // custom header handles this
+    scrollableYearDropdown: true,
+    yearDropdownItemNumber: 60,
+    calendarClassName: 'booking-calendar',
+    fixedHeight: true,                // consistent height; no jump
+    renderCustomHeader: (props) => <CustomHeader {...props} />,
+  }
+
   return (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
@@ -159,9 +237,8 @@ function BookingWidget() {
           <DatePicker
             selected={checkIn}
             onChange={handleCheckInChange}
-            showTimeSelect
-            timeIntervals={15}
-            dateFormat="yyyy-MM-dd h:mm aa"
+            {...commonPickerProps}
+            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
             minDate={minCheckInDate}
             minTime={sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn)}
             maxTime={endOfDay(checkIn)}
@@ -176,9 +253,8 @@ function BookingWidget() {
           <DatePicker
             selected={checkOut}
             onChange={handleCheckOutChange}
-            showTimeSelect
-            timeIntervals={15}
-            dateFormat="yyyy-MM-dd h:mm aa"
+            {...commonPickerProps}
+            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
             minDate={minCheckoutDate}
             minTime={sameDay(checkOut, minCheckoutDate) ? minCheckoutDate : startOfDay(checkOut)}
             maxTime={endOfDay(checkOut)}
@@ -191,11 +267,11 @@ function BookingWidget() {
         <div className="space-y-2">
           <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">GUESTS</label>
           <div className="flex items-center border border-slate-300 rounded-md bg-white">
-            <button onClick={() => setGuests(g => Math.max(1, g - 1))} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+            <button onClick={() => setGuests(g => Math.max(1, g - 1))} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none" aria-label="Decrease guests">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
             </button>
             <span className="flex-1 text-center text-slate-900 font-medium text-sm">{guests}</span>
-            <button onClick={() => setGuests(g => g + 1)} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+            <button onClick={() => setGuests(g => g + 1)} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none" aria-label="Increase guests">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             </button>
           </div>
@@ -210,6 +286,7 @@ function BookingWidget() {
             onChange={(e) => { setName(e.target.value); if (errors.name) setErrors(prev => ({ ...prev, name: '' })) }}
             placeholder="Your Name"
             className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
+            autoComplete="name"
           />
           {errors.name && <p className="text-xs text-red-500 -mt-1">{errors.name}</p>}
         </div>
@@ -224,6 +301,7 @@ function BookingWidget() {
               onChange={(e) => { setMobile(e.target.value); if (errors.mobile) setErrors(prev => ({ ...prev, mobile: '' })) }}
               placeholder="+92-3XX-XXXXXXX"
               className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
+              autoComplete="tel"
             />
             <Button onClick={handleBookNow} disabled={saving} className="px-4 min-w-[110px] h-12">
               {saving ? 'Saving...' : 'Book Now'}
@@ -234,6 +312,132 @@ function BookingWidget() {
       </div>
 
       <FloatingAlert show={savedOk} onClose={() => setSavedOk(false)} />
+
+      {/* ---- Global styles for enhanced, responsive, scroll-safe react-datepicker ---- */}
+      <style jsx global>{`
+        /* Portal overlay: center on all screens so top/bottom never clip */
+        .react-datepicker__portal {
+          position: fixed;
+          inset: 0;
+          display: grid;
+          place-items: center;
+          background: rgba(0, 0, 0, 0.65);
+          padding: 16px;
+          z-index: 100 !important;
+        }
+
+        /* Calendar container: scrollable, capped to viewport height */
+        .react-datepicker__portal .react-datepicker,
+        .booking-calendar {
+          width: min(92vw, 460px);
+          max-height: calc(92svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+          background: #fff;
+          border-radius: 16px;
+          overflow: auto; /* enable internal scroll if needed */
+          border: 1px solid #e5e7eb;
+          box-shadow: 0 20px 40px rgba(2, 6, 23, 0.18);
+        }
+
+        /* Remove built-in prev/next arrows completely */
+        .react-datepicker__navigation,
+        .react-datepicker__navigation--previous,
+        .react-datepicker__navigation--next {
+          display: none !important;
+        }
+
+        /* Header cleaned + sticky */
+        .react-datepicker__header {
+          background: #fff;
+          border-bottom: 1px solid #e5e7eb;
+          padding: 0;
+          position: sticky;
+          top: 0;
+          z-index: 1;
+        }
+        .react-datepicker__current-month { display: none; } /* using custom header */
+
+        /* Day grid sizing */
+        .react-datepicker__day,
+        .react-datepicker__day-name {
+          width: 2.25rem;
+          line-height: 2.25rem;
+          margin: 0.15rem;
+          font-size: 0.95rem;
+        }
+        .react-datepicker__day--selected,
+        .react-datepicker__day--keyboard-selected {
+          background: #01F5FF !important;
+          color: #0f172a !important;
+          border-radius: 8px !important;
+        }
+        .react-datepicker__day:hover {
+          background: #e6fafe;
+          border-radius: 8px;
+        }
+
+        /* Desktop time list */
+        @media (min-width: 641px) {
+          .react-datepicker {
+            display: inline-flex;
+            align-items: stretch;
+            min-height: 360px;
+          }
+          .react-datepicker__month-container {
+            min-width: 300px;
+          }
+          .react-datepicker__time-container {
+            border-left: 1px solid #e5e7eb;
+            width: 120px;
+            position: sticky;
+            top: 0;
+            background: #fff;
+          }
+          .react-datepicker__time, .react-datepicker__time-box {
+            width: 120px;
+            max-height: 320px;
+          }
+          .react-datepicker__time-list { scrollbar-width: thin; }
+          .react-datepicker__time-list-item--selected {
+            background: #01F5FF !important;
+            color: #0f172a !important;
+            border-radius: 6px;
+          }
+        }
+
+        /* Mobile: sticky time input bottom; bigger touch targets */
+        @media (max-width: 640px) {
+          .react-datepicker__triangle { display: none; }
+          .react-datepicker__day-name,
+          .react-datepicker__day {
+            font-size: 15px;
+          }
+          .react-datepicker__input-time-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 14px env(safe-area-inset-bottom);
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+            position: sticky;
+            bottom: 0;
+          }
+          .react-datepicker-time__input {
+            width: 120px;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+          }
+        }
+
+        /* Medium screens: cap time list height to avoid overflow */
+        @media (min-width: 641px) and (max-width: 1024px) {
+          .react-datepicker__time-container,
+          .react-datepicker__time {
+            max-height: 300px;
+          }
+        }
+      `}</style>
     </>
   )
 }
