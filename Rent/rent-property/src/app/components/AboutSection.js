@@ -19,9 +19,9 @@ export default function AboutSection() {
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
               About <span className="text-[#01F5FF]">Rentsin</span>
             </h2>
-            <div className="w-16 h-0.5 bg-[#01F5FF]" />
+            
             <p className="text-slate-300 text-base md:text-lg leading-relaxed">
-              At Rents Inn, we offer clean, comfortable, and stylish apartments for rent in B-17 and
+              At Rentsin, we offer clean, comfortable, and stylish apartments for rent in B-17 and
               D-17, Islamabad. Our homes are fully furnished and ready for you to enjoy — whether
               for a short stay or a long one.
             </p>

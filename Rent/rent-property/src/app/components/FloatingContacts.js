@@ -18,11 +18,10 @@ export default function FloatingContacts() {
         aria-label="Chat on WhatsApp"
       >
         <Image
-        
           src="/ws.png"
           alt="WhatsApp"
-          width={28}
-          height={28}
+          width={40}   // bigger
+          height={40}  // bigger
         />
       </a>
       <a
@@ -33,8 +32,8 @@ export default function FloatingContacts() {
         <Image
           src="/ph.png"
           alt="Call"
-          width={28}
-          height={28}
+          width={40}
+          height={40}
         />
       </a>
     </div>

@@ -1,6 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import FloatingContacts from "./components/FloatingContacts";
+import { GoogleAnalytics } from '@next/third-parties/google'
+import { GoogleTagManager } from '@next/third-parties/google'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Rents Inn",
-  description: "Find your ideal rental home in Islamabad's prime sectors B-17 and D-17. Browse apartments, houses, and commercial properties with modern amenities at competitive prices.",
+  title: "Furnished Rooms For Rent In B17 Islamabad | Rents Inn",
+  description: "Furnished Rooms For Rent In B17 Islamabad with Security and All the amenities that you can think of on day and weekly basis at cheap prices.",
   other: {
     'google-site-verification': 'BxYNxckU2p_Qt2lrdnQr3KboFatYH4C7sp7TQS9kOYk',
   },
@@ -24,7 +26,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T8QSSJ3B"
+          height="0" width="0" style={{ display: 'none', visibility: 'hidden' }}></iframe></noscript>
+
         {children}
+        <GoogleAnalytics gaId="G-FRBTTKB25Q" />
+        <GoogleTagManager gtmId="GTM-T8QSSJ3B" />
         <FloatingContacts />
       </body>
     </html>

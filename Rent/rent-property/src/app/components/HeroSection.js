@@ -69,9 +69,8 @@ function useIsSmallScreen(breakpoint = 640) {
   return isSmall
 }
 
-/* --------------------------- Datepicker Enhancements --------------------- */
-/** Custom header: clean, no arrows, month/year dropdowns */
-function CustomHeader({ date, changeYear, changeMonth }) {
+/* --------------------------- Datepicker Header --------------------------- */
+function CustomHeader({ date, changeYear, changeMonth, onClose }) {
   const years = useMemo(() => {
     const y = new Date().getFullYear()
     const arr = []
@@ -79,15 +78,12 @@ function CustomHeader({ date, changeYear, changeMonth }) {
     return arr
   }, [])
   const months = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December'
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
   ]
 
   return (
     <div className="flex items-center justify-between px-3 py-2 border-b bg-white sticky top-0">
-      <div className="text-slate-900 font-semibold text-sm">
-        {months[date.getMonth()]} {date.getFullYear()}
-      </div>
       <div className="flex items-center gap-2">
         <select
           aria-label="Month"
@@ -106,8 +102,23 @@ function CustomHeader({ date, changeYear, changeMonth }) {
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
+
+      {/* ✕ close */}
+      <button
+        type="button"
+        aria-label="Close calendar"
+        onClick={onClose}
+        className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition"
+      >
+        <CloseIcon className="w-4 h-4" />
+      </button>
     </div>
   )
+}
+
+/* Minimal calendar container */
+function CalendarContainerWrap({ className, children }) {
+  return <div className={`${className || ''} booking-calendar`}>{children}</div>
 }
 
 /* ------------------------------ Booking Widget --------------------------- */
@@ -125,6 +136,10 @@ function BookingWidget() {
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const [savedOk, setSavedOk] = useState(false)
+
+  // Controlled open state
+  const [openCheckIn, setOpenCheckIn] = useState(false)
+  const [openCheckOut, setOpenCheckOut] = useState(false)
 
   const handleCheckInChange = (date) => {
     if (!date) return
@@ -163,7 +178,7 @@ function BookingWidget() {
     const minutes = String(d.getMinutes()).padStart(2, '0')
     const ampm = hours >= 12 ? 'PM' : 'AM'
     hours = hours % 12
-    hours = hours ? hours : 12
+    if (hours === 0) hours = 12
     return `${hours}:${minutes} ${ampm}`
   }
 
@@ -208,25 +223,32 @@ function BookingWidget() {
     }
   }
 
-  // --- Enhanced DatePicker config (portal everywhere; custom header; no arrows) ---
+  // Time selection config
   const desktopTimeProps = { showTimeSelect: true, timeIntervals: 15 }
   const mobileTimeProps = { showTimeInput: true, timeInputLabel: 'Time' }
 
-  const commonPickerProps = {
+  // Common DatePicker props (tiered responsive, no blocking overlay)
+  const pickerCommon = (onClose, selected, minDate, minTime, maxTime) => ({
     dateFormat: 'yyyy-MM-dd h:mm aa',
     popperPlacement: 'bottom-start',
-    withPortal: true,                 // always portal => no clipping on any screen
+    withPortal: true,
     portalId: 'hero-datepicker-portal',
-    shouldCloseOnScroll: false,       // keep open on scroll
+    shouldCloseOnScroll: true,
     dropdownMode: 'select',
-    showMonthDropdown: false,         // custom header handles this
-    showYearDropdown: false,          // custom header handles this
+    showMonthDropdown: false,
+    showYearDropdown: false,
     scrollableYearDropdown: true,
     yearDropdownItemNumber: 60,
     calendarClassName: 'booking-calendar',
-    fixedHeight: true,                // consistent height; no jump
-    renderCustomHeader: (props) => <CustomHeader {...props} />,
-  }
+    fixedHeight: true,
+    renderCustomHeader: (props) => <CustomHeader {...props} onClose={onClose} />,
+    minDate,
+    minTime,
+    maxTime,
+    onClickOutside: onClose,
+    onKeyDown: (e) => { if (e.key === 'Escape') onClose() },
+    calendarContainer: CalendarContainerWrap,
+  })
 
   return (
     <>
@@ -237,13 +259,20 @@ function BookingWidget() {
           <DatePicker
             selected={checkIn}
             onChange={handleCheckInChange}
-            {...commonPickerProps}
             {...(isSmall ? mobileTimeProps : desktopTimeProps)}
-            minDate={minCheckInDate}
-            minTime={sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn)}
-            maxTime={endOfDay(checkIn)}
+            {...pickerCommon(
+              () => setOpenCheckIn(false),
+              checkIn,
+              minCheckInDate,
+              sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn),
+              endOfDay(checkIn)
+            )}
             className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
             placeholderText="Select date & time"
+            open={openCheckIn}
+            onInputClick={() => setOpenCheckIn(true)}
+            onCalendarOpen={() => setOpenCheckIn(true)}
+            onCalendarClose={() => setOpenCheckIn(false)}
           />
         </div>
 
@@ -253,13 +282,20 @@ function BookingWidget() {
           <DatePicker
             selected={checkOut}
             onChange={handleCheckOutChange}
-            {...commonPickerProps}
             {...(isSmall ? mobileTimeProps : desktopTimeProps)}
-            minDate={minCheckoutDate}
-            minTime={sameDay(checkOut, minCheckoutDate) ? minCheckoutDate : startOfDay(checkOut)}
-            maxTime={endOfDay(checkOut)}
+            {...pickerCommon(
+              () => setOpenCheckOut(false),
+              checkOut,
+              addHours(checkIn, 1),
+              sameDay(checkOut, addHours(checkIn, 1)) ? addHours(checkIn, 1) : startOfDay(checkOut),
+              endOfDay(checkOut)
+            )}
             className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
             placeholderText="Select date & time"
+            open={openCheckOut}
+            onInputClick={() => setOpenCheckOut(true)}
+            onCalendarOpen={() => setOpenCheckOut(true)}
+            onCalendarClose={() => setOpenCheckOut(false)}
           />
         </div>
 
@@ -313,86 +349,125 @@ function BookingWidget() {
 
       <FloatingAlert show={savedOk} onClose={() => setSavedOk(false)} />
 
-      {/* ---- Global styles for enhanced, responsive, scroll-safe react-datepicker ---- */}
+      {/* ---- Global styles: tiered responsiveness, safe interaction ---- */}
       <style jsx global>{`
-        /* Portal overlay: center on all screens so top/bottom never clip */
+        /* Non-blocking portal to avoid interaction lock */
         .react-datepicker__portal {
           position: fixed;
           inset: 0;
           display: grid;
           place-items: center;
-          background: rgba(0, 0, 0, 0.65);
           padding: 16px;
           z-index: 100 !important;
+          background: transparent !important;
+          pointer-events: none;
         }
+        .react-datepicker__portal .react-datepicker { pointer-events: auto; }
 
-        /* Calendar container: scrollable, capped to viewport height */
-        .react-datepicker__portal .react-datepicker,
-        .booking-calendar {
-          width: min(92vw, 460px);
-          max-height: calc(92svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+        /* Calendar shell */
+        .react-datepicker,
+        .booking-calendar .react-datepicker {
+          width: min(96vw, 520px);
+          max-height: calc(96svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
           background: #fff;
           border-radius: 16px;
-          overflow: auto; /* enable internal scroll if needed */
           border: 1px solid #e5e7eb;
-          box-shadow: 0 20px 40px rgba(2, 6, 23, 0.18);
+          overflow: hidden;
+          box-shadow: 0 20px 44px rgba(2, 6, 23, 0.18);
         }
 
-        /* Remove built-in prev/next arrows completely */
+        /* Remove lib arrows */
         .react-datepicker__navigation,
         .react-datepicker__navigation--previous,
-        .react-datepicker__navigation--next {
-          display: none !important;
-        }
+        .react-datepicker__navigation--next { display: none !important; }
 
-        /* Header cleaned + sticky */
+        /* Header by CustomHeader */
         .react-datepicker__header {
           background: #fff;
           border-bottom: 1px solid #e5e7eb;
           padding: 0;
           position: sticky;
           top: 0;
-          z-index: 1;
+          z-index: 2;
         }
-        .react-datepicker__current-month { display: none; } /* using custom header */
+        .react-datepicker__current-month { display: none; }
 
-        /* Day grid sizing */
-        .react-datepicker__day,
-        .react-datepicker__day-name {
-          width: 2.25rem;
-          line-height: 2.25rem;
+        /* Month grid spacing */
+        .react-datepicker__month { padding: 8px 10px 12px 10px; }
+
+        /* Day labels + cells — safe sizes (no overflow on long weekday names) */
+        .react-datepicker__day-name,
+        .react-datepicker__day {
+          box-sizing: border-box;
           margin: 0.15rem;
+          width: 2.25rem;
+          height: 2.25rem;
+          line-height: 2.25rem;
           font-size: 0.95rem;
-        }
-        .react-datepicker__day--selected,
-        .react-datepicker__day--keyboard-selected {
-          background: #01F5FF !important;
-          color: #0f172a !important;
-          border-radius: 8px !important;
-        }
-        .react-datepicker__day:hover {
-          background: #e6fafe;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
           border-radius: 8px;
+          user-select: none;
         }
 
-        /* Desktop time list */
-        @media (min-width: 641px) {
+        /* Tier 1: phones (<640px) — single column with time input row */
+        @media (max-width: 639px) {
+          .react-datepicker__triangle { display: none; }
+          .react-datepicker__input-time-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 14px env(safe-area-inset-bottom);
+            border-top: 1px solid #e5e7eb;
+            background: #fff;
+            position: sticky;
+            bottom: 0;
+            z-index: 1;
+          }
+          .react-datepicker-time__input {
+            width: 120px;
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+          }
+        }
+
+        /* Tier 2: small tablets (640–899px) — compact single column, no gutters */
+        @media (min-width: 640px) and (max-width: 899px) {
+          .react-datepicker,
+          .booking-calendar .react-datepicker {
+            width: min(92vw, 520px);
+          }
+          .react-datepicker__day-name,
+          .react-datepicker__day {
+            width: 2.1rem;
+            height: 2.1rem;
+            line-height: 2.1rem;
+            font-size: 0.93rem;
+            margin: 0.12rem;
+          }
+        }
+
+        /* Tier 3: ≥900px — two-column (calendar + time list) */
+        @media (min-width: 900px) {
           .react-datepicker {
-            display: inline-flex;
+            display: grid;
+            grid-template-columns: 1fr 120px;
             align-items: stretch;
             min-height: 360px;
           }
           .react-datepicker__month-container {
-            min-width: 300px;
+            border-right: 1px solid #e5e7eb;
+            min-width: 0; /* allow shrink; remove forced min widths */
           }
           .react-datepicker__time-container {
-            border-left: 1px solid #e5e7eb;
             width: 120px;
-            position: sticky;
-            top: 0;
             background: #fff;
           }
-          .react-datepicker__time, .react-datepicker__time-box {
+          .react-datepicker__time,
+          .react-datepicker__time-box {
             width: 120px;
             max-height: 320px;
           }
@@ -404,39 +479,33 @@ function BookingWidget() {
           }
         }
 
-        /* Mobile: sticky time input bottom; bigger touch targets */
-        @media (max-width: 640px) {
-          .react-datepicker__triangle { display: none; }
+        /* Tier 4: ≥1200px — a bit wider time column */
+        @media (min-width: 1200px) {
+          .react-datepicker {
+            grid-template-columns: 1fr 136px;
+          }
+          .react-datepicker__time-container,
+          .react-datepicker__time,
+          .react-datepicker__time-box { width: 136px; }
+        }
+
+        /* Fine tune for very large displays */
+        @media (min-width: 1400px) {
           .react-datepicker__day-name,
           .react-datepicker__day {
-            font-size: 15px;
-          }
-          .react-datepicker__input-time-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 14px env(safe-area-inset-bottom);
-            border-top: 1px solid #e5e7eb;
-            background: #fff;
-            position: sticky;
-            bottom: 0;
-          }
-          .react-datepicker-time__input {
-            width: 120px;
-            padding: 10px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 14px;
+            width: 2.2rem;
+            height: 2.2rem;
+            line-height: 2.2rem;
+            font-size: 0.95rem;
           }
         }
 
-        /* Medium screens: cap time list height to avoid overflow */
-        @media (min-width: 641px) and (max-width: 1024px) {
-          .react-datepicker__time-container,
-          .react-datepicker__time {
-            max-height: 300px;
-          }
+        .react-datepicker__day--selected,
+        .react-datepicker__day--keyboard-selected {
+          background: #01F5FF !important;
+          color: #0f172a !important;
         }
+        .react-datepicker__day:hover { background: #e6fafe; }
       `}</style>
     </>
   )
@@ -504,7 +573,7 @@ export default function HeroSection() {
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 flex-1 flex flex-col justify-center">
         <div className="space-y-6 sm:space-y-8 mb-8">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-bold animate-fade-in-up">
-            Rooms/ Apartment for rent in Islamabad
+            Rooms & Apartment for rent in B-17
           </h1>
 
           <div className="w-24 h-0.5 bg-[#01F5FF] mx-auto animate-fade-in-up animation-delay-200"></div>

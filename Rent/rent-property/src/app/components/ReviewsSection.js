@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { Star } from 'lucide-react'
-import { Playfair_Display, Mulish } from 'next/font/google'
+import { Mulish } from 'next/font/google'
 
-const playfair = Playfair_Display({ subsets: ['latin'], display: 'swap' })
 const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
 function Card({ children, className = '' }) {
   return (
-    <div className={`rounded-lg border bg-white text-slate-950 shadow-sm ${mulish.className} ${className}`}>
+    <div className={`rounded-lg border bg-white text-slate-950 shadow-sm ${className}`}>
       {children}
     </div>
   )
@@ -124,10 +123,12 @@ function ClientReviewsSlider() {
 
 export default function ReviewsSection() {
   return (
-    <section className="py-20 sm:py-24 bg-slate-800">
+    // Apply Mulish to the entire section so EVERYTHING inside uses Mulish
+    <section className={`py-20 sm:py-24 bg-slate-800 ${mulish.className}`}>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12 lg:mb-16">
-          <h2 className={`${playfair.className} text-3xl sm:text-4xl md:text-5xl text-white mb-6`}>
+          {/* Heading now uses Mulish too (Playfair removed) */}
+          <h2 className="text-3xl sm:text-4xl md:text-5xl text-white mb-6">
             What They're Saying
           </h2>
           <div

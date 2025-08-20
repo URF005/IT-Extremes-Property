@@ -117,27 +117,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Location */}
-          <div>
-            <h4 className="text-white font-semibold mb-4 lg:mb-6">Location</h4>
-            <ul className="space-y-2 lg:space-y-3">
-              <li>
-                <span className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base">
-                  Islamabad
-                </span>
-              </li>
-              <li>
-                <span className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base">
-                  Sector B-17
-                </span>
-              </li>
-              <li>
-                <span className="text-slate-400 hover:text-[#01F5FF] transition-colors text-sm sm:text-base">
-                  Sector D-17
-                </span>
-              </li>
-            </ul>
-          </div>
+
 
           {/* Contact Info */}
           <div>
