@@ -571,7 +571,7 @@ export default function PropertiesSection() {
       },
       {
         mediaType: 'imageGallery',
-        name: 'Rentsin Dream ',
+        name: 'Rents inn Dream ',
         location: 'Capital Square Block D',
         images: ['/img1.jpeg', '/img2.jpeg', '/img3.jpeg', '/img4.jpeg'],
         description: '2-bedroom apartment with AC',

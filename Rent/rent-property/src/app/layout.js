@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Furnished Rooms For Rent In B17 Islamabad | Rentsinn",
+  title: "Furnished Rooms For Rent In B17 Islamabad | Rents inn",
   description: "Furnished Rooms For Rent In B17 Islamabad with Security and All the amenities that you can think of on day and weekly basis at cheap prices.",
   other: {
     'google-site-verification': 'BxYNxckU2p_Qt2lrdnQr3KboFatYH4C7sp7TQS9kOYk',

@@ -122,7 +122,7 @@ export default function ContactSection() {
               <div className="min-w-0 flex-1">
                 <h3 className="text-white font-semibold">Email</h3>
                 <p className="text-slate-300 break-words">
-                  Support@Rentsinn.com
+                  Support@rentsinn.com
                 </p>
               </div>
             </div>

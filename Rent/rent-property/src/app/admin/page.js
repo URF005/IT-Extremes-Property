@@ -129,7 +129,7 @@ export default function AdminPage() {
               Admin Dashboard
             </h1>
             <p className="text-slate-400 text-xs sm:text-sm mt-0.5">
-              IT Extremes — Messages & Bookings
+              Rents inn — Messages & Bookings
             </p>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
