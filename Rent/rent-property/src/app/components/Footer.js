@@ -136,10 +136,10 @@ export default function Footer() {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-[#01F5FF] flex-shrink-0" />
                 <a
-                  href="mailto:support@Rentsinn.com"
+                  href="mailto:support@rentsinn.com"
                   className="text-slate-400 text-sm sm:text-base hover:text-[#01F5FF]"
                 >
-                  support@Rentsinn.com
+                  support@rentsinn.com
                 </a>
               </div>
             </div>
