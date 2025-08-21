@@ -107,7 +107,7 @@ export default function Header() {
                 <Mail className="w-4 h-4 text-[#01F5FF]" />
                 {/* EMAIL -> Opens Gmail compose in new tab */}
                 <a
-                  href={getGmailComposeUrl(SUPPORT_EMAIL)}
+                  href={getGmailComposeUrl(SUPPORT_EMAIL, 'Support Request', 'Hello Rentsinn team,')}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="whitespace-nowrap hover:text-[#01F5FF] transition-colors underline-offset-2"

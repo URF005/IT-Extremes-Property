@@ -7,6 +7,15 @@ import { FaFacebookF, FaInstagram, FaYoutube, FaTiktok } from 'react-icons/fa'
 
 const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
+// Support email
+const SUPPORT_EMAIL = 'Support@rentsinn.com'
+
+// Gmail compose URL builder
+const getGmailComposeUrl = (to, subject = '', body = '') =>
+  `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+    to
+  )}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+
 export default function Footer() {
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId)
@@ -117,8 +126,6 @@ export default function Footer() {
             </ul>
           </div>
 
-
-
           {/* Contact Info */}
           <div>
             <h4 className="text-white font-semibold mb-4 lg:mb-6">Contact Info</h4>
@@ -136,10 +143,12 @@ export default function Footer() {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-[#01F5FF] flex-shrink-0" />
                 <a
-                  href="mailto:support@rentsinn.com"
+                  href={getGmailComposeUrl(SUPPORT_EMAIL, 'Support Request', 'Hello Rentsinn team,')}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-slate-400 text-sm sm:text-base hover:text-[#01F5FF]"
                 >
-                  support@rentsinn.com
+                  {SUPPORT_EMAIL}
                 </a>
               </div>
             </div>
