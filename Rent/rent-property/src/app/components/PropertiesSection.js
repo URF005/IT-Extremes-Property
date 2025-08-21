@@ -57,24 +57,48 @@ function ChevronRight({ className = '' }) {
 }
 
 /* ------------------------------ Utils ------------------------------ */
-const addHours = (d, h) => new Date(d.getTime() + h * 3600_000)
-const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
-const endOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 45, 0, 0)
-const sameDay = (a, b) => a.toDateString() === b.toDateString()
+const INTERVAL_MIN = 15
 
-function useIsSmallScreen(breakpoint = 640) {
-  const [isSmall, setIsSmall] = useState(false)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mql = window.matchMedia(`(max-width: ${breakpoint}px)`)
-    const onChange = (e) => setIsSmall(e.matches)
-    setIsSmall(mql.matches)
-    mql.addEventListener ? mql.addEventListener('change', onChange) : mql.addListener(onChange)
-    return () => {
-      mql.removeEventListener ? mql.removeEventListener('change', onChange) : mql.removeListener(onChange)
+const addHours = (d, h) => new Date(d.getTime() + h * 3600_000)
+const roundUpToInterval = (date, intervalMinutes = INTERVAL_MIN) => {
+  const d = new Date(date)
+  const ms = intervalMinutes * 60 * 1000
+  const rounded = new Date(Math.ceil(d.getTime() / ms) * ms)
+  rounded.setSeconds(0, 0)
+  return rounded
+}
+const toYMD = (d) => {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+const to12h = (d) => {
+  let h = d.getHours()
+  const m = String(d.getMinutes()).padStart(2, '0')
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  h = h % 12
+  if (h === 0) h = 12
+  return `${h}:${m} ${ampm}`
+}
+const parseTimeOption = (value, baseDate) => {
+  const [hh, mm] = value.split(':').map(Number)
+  const d = new Date(baseDate)
+  d.setHours(hh, mm, 0, 0)
+  return d
+}
+const makeTimeOptions = (interval = INTERVAL_MIN) => {
+  const opts = []
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += interval) {
+      const d = new Date()
+      d.setHours(h, m, 0, 0)
+      const label = to12h(d)
+      const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+      opts.push({ label, value })
     }
-  }, [breakpoint])
-  return isSmall
+  }
+  return opts
 }
 
 /* ----------------------------- Floating Alert ---------------------------- */
@@ -100,7 +124,6 @@ function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We�
 }
 
 /* --------------------------- Datepicker Enhancements --------------------- */
-/** Custom header: clean month/year + ✕ close */
 function CustomHeader({ date, changeYear, changeMonth, onClose }) {
   const years = useMemo(() => {
     const y = new Date().getFullYear()
@@ -109,10 +132,9 @@ function CustomHeader({ date, changeYear, changeMonth, onClose }) {
     return arr
   }, [])
   const months = [
-    'January','February','March','April','May','June',
-    'July','August','September','October','November','December'
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
   ]
-
   return (
     <div className="flex items-center justify-between px-3 py-2 border-b bg-white sticky top-0">
       <div className="flex items-center gap-2">
@@ -133,7 +155,6 @@ function CustomHeader({ date, changeYear, changeMonth, onClose }) {
           {years.map((y) => <option key={y} value={y}>{y}</option>)}
         </select>
       </div>
-
       <button
         type="button"
         aria-label="Close calendar"
@@ -145,46 +166,35 @@ function CustomHeader({ date, changeYear, changeMonth, onClose }) {
     </div>
   )
 }
-
-/* Minimal calendar container wrapper */
 function CalendarContainerWrap({ className, children }) {
   return <div className={`${className || ''} booking-calendar`}>{children}</div>
 }
 
 /* ------------------------------ Booking Widget --------------------------- */
+/* Date pickers for dates + dropdown selects for times. No 1‑hour constraint. */
 function BookingWidget({ defaultGuests = 1, onBooked }) {
-  const now = useMemo(() => new Date(), [])
-  const defaultCheckout = useMemo(() => addHours(now, 24), [now])
-  const isSmall = useIsSmallScreen(640)
+  const now = useMemo(() => roundUpToInterval(new Date()), [])
+  const defaultCheckOut = useMemo(() => addHours(now, 24), [now])
 
-  const [checkIn, setCheckIn] = useState(now)
-  const [checkOut, setCheckOut] = useState(defaultCheckout)
+  const [checkInDate, setCheckInDate] = useState(now)
+  const [checkOutDate, setCheckOutDate] = useState(defaultCheckOut)
+
+  const timeOptions = useMemo(() => makeTimeOptions(INTERVAL_MIN), [])
+  const [checkInTime, setCheckInTime] = useState(() => `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`)
+  const [checkOutTime, setCheckOutTime] = useState(() => {
+    const out = defaultCheckOut
+    return `${String(out.getHours()).padStart(2, '0')}:${String(out.getMinutes()).padStart(2, '0')}`
+  })
+
   const [guests, setGuests] = useState(defaultGuests)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
-
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const [savedOk, setSavedOk] = useState(false)
 
-  // Controlled open states (so ✕ / Escape / click-outside close reliably)
-  const [openCheckIn, setOpenCheckIn] = useState(false)
-  const [openCheckOut, setOpenCheckOut] = useState(false)
-
-  const handleCheckInChange = (date) => {
-    if (!date) return
-    setCheckIn(date)
-    const minCo = addHours(date, 1)
-    if (!(checkOut > minCo)) setCheckOut(minCo)
-  }
-  const handleCheckOutChange = (date) => {
-    if (!date) return
-    const minCo = addHours(checkIn, 1)
-    setCheckOut(date > minCo ? date : minCo)
-  }
-
-  const minCheckInDate = now
-  const minCheckoutDate = addHours(checkIn, 1)
+  const checkInDT = useMemo(() => parseTimeOption(checkInTime, checkInDate), [checkInDate, checkInTime])
+  const checkOutDT = useMemo(() => parseTimeOption(checkOutTime, checkOutDate), [checkOutDate, checkOutTime])
 
   const validate = () => {
     const e = {}
@@ -195,30 +205,14 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
     return Object.keys(e).length === 0
   }
 
-  const formatDate = (d) => {
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
-  const formatTime12h = (d) => {
-    let hours = d.getHours()
-    const minutes = String(d.getMinutes()).padStart(2, '0')
-    const ampm = hours >= 12 ? 'PM' : 'AM'
-    hours = hours % 12
-    hours = hours ? hours : 12
-    return `${hours}:${minutes} ${ampm}`
-  }
-
   const handleBookNow = async () => {
     if (!validate()) return
     setSaving(true)
     setSavedOk(false)
     try {
       const bookingData = {
-        checkIn: { date: formatDate(checkIn), time: formatTime12h(checkIn) },
-        checkOut: { date: formatDate(checkOut), time: formatTime12h(checkOut) },
+        checkIn: { date: toYMD(checkInDT), time: to12h(checkInDT) },
+        checkOut: { date: toYMD(checkOutDT), time: to12h(checkOutDT) },
         guests,
         name,
         mobile,
@@ -238,13 +232,16 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
       setSavedOk(true)
       setTimeout(() => setSavedOk(false), 2500)
 
+      const freshNow = roundUpToInterval(new Date())
+      const freshOut = addHours(freshNow, 24)
+      setCheckInDate(freshNow)
+      setCheckOutDate(freshOut)
+      setCheckInTime(`${String(freshNow.getHours()).padStart(2, '0')}:${String(freshNow.getMinutes()).padStart(2, '0')}`)
+      setCheckOutTime(`${String(freshOut.getHours()).padStart(2, '0')}:${String(freshOut.getMinutes()).padStart(2, '0')}`)
+      setGuests(defaultGuests)
       setName('')
       setMobile('')
-      setGuests(defaultGuests)
       setErrors({})
-      const freshNow = new Date()
-      setCheckIn(freshNow)
-      setCheckOut(addHours(freshNow, 24))
 
       onBooked?.(bookingData)
     } catch (err) {
@@ -255,13 +252,11 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
     }
   }
 
-  // Time selection config
-  const desktopTimeProps = { showTimeSelect: true, timeIntervals: 15 }
-  const mobileTimeProps = { showTimeInput: true, timeInputLabel: 'Time' }
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
-  // Common picker props with tiered responsiveness + non-blocking portal
-  const pickerCommon = (onClose, minDate, minTime, maxTime) => ({
-    dateFormat: 'yyyy-MM-dd h:mm aa',
+  const pickerCommon = (onClose, minDate) => ({
+    dateFormat: 'yyyy-MM-dd',
     popperPlacement: 'bottom-start',
     withPortal: true,
     portalId: 'booking-datepicker-portal',
@@ -275,32 +270,27 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
     fixedHeight: true,
     renderCustomHeader: (props) => <CustomHeader {...props} onClose={onClose} />,
     minDate,
-    minTime,
-    maxTime,
     onClickOutside: onClose,
     onKeyDown: (e) => { if (e.key === 'Escape') onClose() },
     calendarContainer: CalendarContainerWrap,
   })
 
+  const [openCheckIn, setOpenCheckIn] = useState(false)
+  const [openCheckOut, setOpenCheckOut] = useState(false)
+
   return (
     <>
-      {/* Responsive grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-4 items-end">
-        {/* Check-in */}
-        <div className="space-y-2">
-          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-IN</label>
+      {/* Wider inline layout: 6 columns from lg (≥1024px) so fields sit in one line */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
+        {/* Check-in Date */}
+        <div className="space-y-2 lg:col-span-1">
+          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">Check‑in Date</label>
           <DatePicker
-            selected={checkIn}
-            onChange={handleCheckInChange}
-            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
-            {...pickerCommon(
-              () => setOpenCheckIn(false),
-              minCheckInDate,
-              sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn),
-              endOfDay(checkIn)
-            )}
+            selected={checkInDate}
+            onChange={(d) => d && setCheckInDate(roundUpToInterval(d))}
+            {...pickerCommon(() => setOpenCheckIn(false), today)}
             className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
-            placeholderText="Select date & time"
+            placeholderText="Select date"
             open={openCheckIn}
             onInputClick={() => setOpenCheckIn(true)}
             onCalendarOpen={() => setOpenCheckIn(true)}
@@ -308,21 +298,29 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
           />
         </div>
 
-        {/* Check-out */}
-        <div className="space-y-2">
-          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-OUT</label>
+        {/* Check-in Time */}
+        <div className="space-y-2 lg:col-span-1">
+          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">Check‑in Time</label>
+          <select
+            value={checkInTime}
+            onChange={(e) => setCheckInTime(e.target.value)}
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
+          >
+            {timeOptions.map((t) => (
+              <option key={`ci-${t.value}`} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Check-out Date */}
+        <div className="space-y-2 lg:col-span-1">
+          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">Check‑out Date</label>
           <DatePicker
-            selected={checkOut}
-            onChange={handleCheckOutChange}
-            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
-            {...pickerCommon(
-              () => setOpenCheckOut(false),
-              minCheckoutDate,
-              sameDay(checkOut, minCheckoutDate) ? minCheckoutDate : startOfDay(checkOut),
-              endOfDay(checkOut)
-            )}
+            selected={checkOutDate}
+            onChange={(d) => d && setCheckOutDate(roundUpToInterval(d))}
+            {...pickerCommon(() => setOpenCheckOut(false), checkInDate)}
             className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
-            placeholderText="Select date & time"
+            placeholderText="Select date"
             open={openCheckOut}
             onInputClick={() => setOpenCheckOut(true)}
             onCalendarOpen={() => setOpenCheckOut(true)}
@@ -330,9 +328,23 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
           />
         </div>
 
+        {/* Check-out Time */}
+        <div className="space-y-2 lg:col-span-1">
+          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">Check‑out Time</label>
+          <select
+            value={checkOutTime}
+            onChange={(e) => setCheckOutTime(e.target.value)}
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
+          >
+            {timeOptions.map((t) => (
+              <option key={`co-${t.value}`} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+        </div>
+
         {/* Guests */}
-        <div className="space-y-2">
-          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">GUESTS</label>
+        <div className="space-y-2 lg:col-span-1">
+          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">Guests</label>
           <div className="flex items-center border border-slate-300 rounded-md bg-white">
             <button
               onClick={() => setGuests((g) => Math.max(1, g - 1))}
@@ -353,8 +365,8 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
         </div>
 
         {/* Name */}
-        <div className="space-y-2">
-          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">NAME</label>
+        <div className="space-y-2 lg:col-span-1">
+          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">Name</label>
           <input
             type="text"
             value={name}
@@ -370,42 +382,41 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
           {errors.name && <p className="text-xs text-red-500 -mt-1">{errors.name}</p>}
         </div>
 
-        {/* Mobile + Book Now */}
-        <div className="space-y-2 md:col-span-2 xl:col-span-2">
-          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">MOBILE</label>
-
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2">
-            <input
-              type="tel"
-              value={mobile}
-              onChange={(e) => {
-                setMobile(e.target.value)
-                if (errors.mobile) setErrors((prev) => ({ ...prev, mobile: '' }))
-              }}
-              placeholder="+92-3XX-XXXXXXX"
-              className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
-              inputMode="tel"
-              autoComplete="tel"
-            />
-            <Button
-              onClick={handleBookNow}
-              disabled={saving}
-              className="w-full sm:w-auto sm:min-w-[128px] h-12 px-4"
-              aria-label="Submit booking"
-            >
-              {saving ? 'Saving…' : 'Book Now'}
-            </Button>
+        {/* Mobile + Book Now — full row on xl, centered on sm and xl */}
+        <div className="space-y-2 md:col-span-2 xl:col-span-6">
+          <label className="text-xs sm:text-sm font-medium text-slate-600 uppercase tracking-wide">Mobile</label>
+          <div className="flex sm:justify-center xl:justify-center">
+            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 w-full sm:max-w-xl xl:max-w-2xl">
+              <input
+                type="tel"
+                value={mobile}
+                onChange={(e) => {
+                  setMobile(e.target.value)
+                  if (errors.mobile) setErrors((prev) => ({ ...prev, mobile: '' }))
+                }}
+                placeholder="+92-3XX-XXXXXXX"
+                className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
+                inputMode="tel"
+                autoComplete="tel"
+              />
+              <Button
+                onClick={handleBookNow}
+                disabled={saving}
+                className="w-full sm:w-auto sm:min-w-[128px] h-12 px-4"
+                aria-label="Submit booking"
+              >
+                {saving ? 'Saving…' : 'Book Now'}
+              </Button>
+            </div>
           </div>
-
           {errors.mobile && <p className="text-xs text-red-500">{errors.mobile}</p>}
         </div>
       </div>
 
       <FloatingAlert show={savedOk} onClose={() => setSavedOk(false)} />
 
-      {/* Global styles: non-blocking portal + tiered responsive calendar/time */}
+      {/* Global styles: non-blocking portal + tidy calendar */}
       <style jsx global>{`
-        /* Non-blocking portal prevents interaction lock after closing */
         .react-datepicker__portal {
           position: fixed;
           inset: 0;
@@ -418,7 +429,6 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
         }
         .react-datepicker__portal .react-datepicker { pointer-events: auto; }
 
-        /* Calendar shell */
         .react-datepicker,
         .booking-calendar .react-datepicker {
           width: min(96vw, 520px);
@@ -430,12 +440,10 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
           box-shadow: 0 20px 44px rgba(2, 6, 23, 0.18);
         }
 
-        /* Remove default arrows */
         .react-datepicker__navigation,
         .react-datepicker__navigation--previous,
         .react-datepicker__navigation--next { display: none !important; }
 
-        /* Header managed by CustomHeader (with ✕) */
         .react-datepicker__header {
           background: #fff;
           border-bottom: 1px solid #e5e7eb;
@@ -446,10 +454,8 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
         }
         .react-datepicker__current-month { display: none; }
 
-        /* Month grid spacing */
         .react-datepicker__month { padding: 8px 10px 12px 10px; }
 
-        /* Day labels + cells — safe sizes to avoid overflow */
         .react-datepicker__day-name,
         .react-datepicker__day {
           box-sizing: border-box;
@@ -465,46 +471,6 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
           user-select: none;
         }
 
-        /* Tier 1: phones (<640px) — single column with time input row */
-        @media (max-width: 639px) {
-          .react-datepicker__triangle { display: none; }
-          .react-datepicker__input-time-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 14px env(safe-area-inset-bottom);
-            border-top: 1px solid #e5e7eb;
-            background: #fff;
-            position: sticky;
-            bottom: 0;
-            z-index: 1;
-          }
-          .react-datepicker-time__input {
-            width: 120px;
-            padding: 10px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 14px;
-          }
-        }
-
-        /* Tier 2: small tablets (640–899px) — compact single column */
-        @media (min-width: 640px) and (max-width: 899px) {
-          .react-datepicker,
-          .booking-calendar .react-datepicker {
-            width: min(92vw, 520px);
-          }
-          .react-datepicker__day-name,
-          .react-datepicker__day {
-            width: 2.1rem;
-            height: 2.1rem;
-            line-height: 2.1rem;
-            font-size: 0.93rem;
-            margin: 0.12rem;
-          }
-        }
-
-        /* Tier 3: ≥900px — two-column (calendar + time list) */
         @media (min-width: 900px) {
           .react-datepicker {
             display: grid;
@@ -512,35 +478,18 @@ function BookingWidget({ defaultGuests = 1, onBooked }) {
             align-items: stretch;
             min-height: 360px;
           }
-          .react-datepicker__month-container {
-            border-right: 1px solid #e5e7eb;
-            min-width: 0; /* allow shrink */
-          }
-          .react-datepicker__time-container {
-            width: 120px;
-            background: #fff;
-          }
-          .react-datepicker__time,
-          .react-datepicker__time-box {
-            width: 120px;
-            max-height: 320px;
-          }
+          .react-datepicker__month-container { border-right: 1px solid #e5e7eb; min-width: 0; }
+          .react-datepicker__time-container { width: 120px; background: #fff; }
+          .react-datepicker__time, .react-datepicker__time-box { width: 120px; max-height: 320px; }
           .react-datepicker__time-list { scrollbar-width: thin; }
           .react-datepicker__time-list-item--selected {
-            background: #01F5FF !important;
-            color: #0f172a !important;
-            border-radius: 6px;
+            background: #01F5FF !important; color: #0f172a !important; border-radius: 6px;
           }
         }
 
-        /* Tier 4: ≥1200px — wider time column */
         @media (min-width: 1200px) {
-          .react-datepicker {
-            grid-template-columns: 1fr 136px;
-          }
-          .react-datepicker__time-container,
-          .react-datepicker__time,
-          .react-datepicker__time-box { width: 136px; }
+          .react-datepicker { grid-template-columns: 1fr 136px; }
+          .react-datepicker__time-container, .react-datepicker__time, .react-datepicker__time-box { width: 136px; }
         }
 
         .react-datepicker__day--selected,
@@ -659,6 +608,38 @@ export default function PropertiesSection() {
     arr.sort((a, b) => (b.highlight ? 1 : 0) - (a.highlight ? 1 : 0))
     return arr
   }, [properties])
+
+  /* ---------- Scroll hint logic for Booking Modal ---------- */
+  useEffect(() => {
+    if (modal?.type !== 'booking') return
+    const container = document.getElementById('booking-scroll-container')
+    const indicator = document.getElementById('scroll-indicator')
+    if (!container || !indicator) return
+
+    const checkScroll = () => {
+      const hasOverflow = container.scrollHeight > container.clientHeight + 1
+      if (!hasOverflow) {
+        indicator.style.opacity = '0'
+        return
+      }
+      const nearBottom = container.scrollTop + container.clientHeight >= container.scrollHeight - 10
+      indicator.style.opacity = nearBottom ? '0' : '1'
+    }
+
+    // Initial + listeners
+    checkScroll()
+    container.addEventListener('scroll', checkScroll)
+    window.addEventListener('resize', checkScroll)
+
+    // Small delayed check (images/fonts can change height)
+    const t = setTimeout(checkScroll, 150)
+
+    return () => {
+      clearTimeout(t)
+      container.removeEventListener('scroll', checkScroll)
+      window.removeEventListener('resize', checkScroll)
+    }
+  }, [modal])
 
   return (
     <>
@@ -825,7 +806,8 @@ export default function PropertiesSection() {
         <div className="fixed inset-0 z-50 grid place-items-center p-3 sm:p-6" style={{ minHeight: '100svh' }}>
           <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={closeModal} />
 
-          <div className="relative z-10 w-full max-w-6xl">
+          {/* Wider, scrollable modal container */}
+          <div className="relative z-10 w-full max-w-[1200px]">
             <button
               onClick={closeModal}
               className="absolute -top-10 right-0 sm:-top-12 text-white/90 hover:text-white text-2xl"
@@ -856,14 +838,7 @@ export default function PropertiesSection() {
                   className="relative w-full h-full rounded-xl overflow-hidden shadow-2xl bg-black select-none"
                   onTouchStart={(e) => setTouchStartX(e.touches[0].clientX)}
                   onTouchMove={(e) => setTouchEndX(e.touches[0].clientX)}
-                  onTouchEnd={() => {
-                    if (touchStartX === null || touchEndX === null) return
-                    const delta = touchEndX - touchStartX
-                    const threshold = 40
-                    if (delta > threshold) prevImage()
-                    if (delta < -threshold) nextImage()
-                    setTouchStartX(null); setTouchEndX(null)
-                  }}
+                  onTouchEnd={onTouchEnd}
                 >
                   <img
                     src={modal.images[modal.index]}
@@ -898,32 +873,48 @@ export default function PropertiesSection() {
               </div>
             )}
 
-            {/* Booking Modal */}
+            {/* Booking Modal — scrollable & expanded with scroll hint */}
             {modal.type === 'booking' && (
-              <div className="mx-auto w-full max-w-3xl">
-                <div className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-white">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 sm:p-5 border-b">
-                    <div className="relative w-16 h-16 rounded-md overflow-hidden hidden sm:block">
-                      {modal.property?.mediaType === 'video' ? (
-                        <img src={modal.property.poster} alt="Poster" className="absolute inset-0 w-full h-full object-cover" />
-                      ) : (
-                        <img src={modal.property?.images?.[0]} alt="Thumbnail" className="absolute inset-0 w-full h-full object-cover" />
-                      )}
+              <div className="mx-auto w-full">
+                <div
+                  className="relative w-full rounded-xl overflow-hidden shadow-2xl bg-white max-h-[90svh] overflow-y-auto"
+                  id="booking-scroll-container"
+                >
+                  {/* Bottom fade + hint (only visible when content overflows / not at bottom) */}
+                  <div
+                    id="scroll-indicator"
+                    className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-white to-transparent flex items-end justify-center text-[11px] sm:text-xs text-slate-500 pointer-events-none opacity-0 transition-opacity duration-200"
+                    aria-hidden="true"
+                  >
+                    <div className="mb-1 px-2 py-0.5 rounded-full bg-white/80 border border-slate-200 shadow-sm">
+                      ↑ Scroll for more
                     </div>
-                    <div className="flex-1">
-                      <h4 className="text-base sm:text-lg font-semibold text-slate-900">
-                        Book: {modal.property?.name ?? 'Property'}
-                      </h4>
-                      <p className="text-xs sm:text-sm text-slate-600">{modal.property?.location}</p>
+                  </div>
+
+                  {/* Header (sticky for long content) */}
+                  <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3 p-4 sm:p-5">
+                      <div className="relative w-16 h-16 rounded-md overflow-hidden hidden sm:block">
+                        {modal.property?.mediaType === 'video' ? (
+                          <img src={modal.property.poster} alt="Poster" className="absolute inset-0 w-full h-full object-cover" />
+                        ) : (
+                          <img src={modal.property?.images?.[0]} alt="Thumbnail" className="absolute inset-0 w-full h-full object-cover" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-base sm:text-lg font-semibold text-slate-900">
+                          Book: {modal.property?.name ?? 'Property'}
+                        </h4>
+                        <p className="text-xs sm:text-sm text-slate-600">{modal.property?.location}</p>
+                      </div>
+                      <button
+                        onClick={closeModal}
+                        aria-label="Close booking"
+                        className="self-start sm:self-auto text-slate-400 hover:text-slate-600 transition p-1"
+                      >
+                        <CloseIcon className="w-5 h-5" />
+                      </button>
                     </div>
-                    <button
-                      onClick={closeModal}
-                      aria-label="Close booking"
-                      className="self-start sm:self-auto text-slate-400 hover:text-slate-600 transition p-1"
-                    >
-                      <CloseIcon className="w-5 h-5" />
-                    </button>
                   </div>
 
                   {/* Content */}
@@ -932,6 +923,7 @@ export default function PropertiesSection() {
                       <BookingWidget
                         defaultGuests={1}
                         onBooked={() => {
+                          // optionally close after success
                           // setTimeout(() => closeModal(), 1200)
                         }}
                       />

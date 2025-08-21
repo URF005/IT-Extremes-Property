@@ -10,12 +10,18 @@ import 'react-datepicker/dist/react-datepicker.css'
 const mulish = Mulish({ subsets: ['latin'], display: 'swap' })
 
 /* ----------------------------- Floating Alert ----------------------------- */
-function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We’ll contact you shortly.', onClose }) {
+function FloatingAlert({
+  show,
+  title = 'Success',
+  message = 'Booking saved. We’ll contact you shortly.',
+  onClose,
+}) {
   return (
     <div
-      className={`fixed z-[100] transition-all duration-300 ${show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}
-      w-full max-w-sm sm:max-w-xs bottom-0 sm:bottom-4 sm:right-4 sm:translate-x-0`}
-      style={{ left: show ? '50%' : '50%', transform: show ? 'translate(-50%, 0)' : 'translate(-50%, 1rem)' }}
+      className={`fixed z-[100] transition-all duration-300 ${
+        show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+      } w-full max-w-sm sm:max-w-xs bottom-0 sm:bottom-4 sm:right-4 sm:translate-x-0`}
+      style={{ left: '50%', transform: show ? 'translate(-50%, 0)' : 'translate(-50%, 1rem)' }}
     >
       <div className="mx-auto sm:mx-0 flex items-start gap-3 rounded-xl border border-[#01F5FF]/60 bg-white/95 backdrop-blur p-4 shadow-2xl w-[90%] sm:w-auto">
         <CheckCircle2 className="w-5 h-5 text-[#01F5FF] mt-0.5 flex-shrink-0" />
@@ -23,7 +29,11 @@ function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We�
           <p className="text-slate-900 font-semibold">{title}</p>
           <p className="text-slate-600 text-sm break-words">{message}</p>
         </div>
-        <button aria-label="Close" onClick={onClose} className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 transition">
+        <button
+          aria-label="Close"
+          onClick={onClose}
+          className="absolute right-2 top-2 text-slate-400 hover:text-slate-600 transition"
+        >
           <CloseIcon className="w-4 h-4" />
         </button>
       </div>
@@ -33,12 +43,19 @@ function FloatingAlert({ show, title = 'Success', message = 'Booking saved. We�
 
 /* --------------------------------- Button -------------------------------- */
 function Button({ children, className = '', size = 'md', variant = 'default', onClick, ...props }) {
-  const base = 'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer'
-  const sizes = { xs: 'px-2 py-1 text-xs h-7', sm: 'px-3 py-2 text-sm h-8', md: 'px-4 py-2 text-base h-10', lg: 'px-6 py-3 text-lg h-12' }
+  const base =
+    'inline-flex items-center justify-center rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none cursor-pointer'
+  const sizes = {
+    xs: 'px-2 py-1 text-xs h-7',
+    sm: 'px-3 py-2 text-sm h-8',
+    md: 'px-4 py-2 text-base h-10',
+    lg: 'px-6 py-3 text-lg h-12',
+  }
   const variants = {
     default: 'bg-[#01F5FF] text-slate-900 hover:bg-[#00DDEE] focus:ring-[#01F5FF]',
-    outline: 'border border-[#01F5FF] text-[#01F5FF] bg-transparent hover:bg-[#01F5FF] hover:text-slate-900 focus:ring-[#01F5FF]',
-    link: 'text-[#01F5FF] hover:text-[#00DDEE] underline-offset-4 hover:underline bg-transparent p-0 h-auto'
+    outline:
+      'border border-[#01F5FF] text-[#01F5FF] bg-transparent hover:bg-[#01F5FF] hover:text-slate-900 focus:ring-[#01F5FF]',
+    link: 'text-[#01F5FF] hover:text-[#00DDEE] underline-offset-4 hover:underline bg-transparent p-0 h-auto',
   }
   return (
     <button className={`${base} ${sizes[size]} ${variants[variant]} ${className}`} onClick={onClick} {...props}>
@@ -48,114 +65,89 @@ function Button({ children, className = '', size = 'md', variant = 'default', on
 }
 
 /* --------------------------------- Utils --------------------------------- */
-const addHours = (d, h) => new Date(d.getTime() + h * 3600_000)
-const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0)
-const endOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 45, 0, 0) // 15-min step
-const sameDay = (a, b) => a.toDateString() === b.toDateString()
+const INTERVAL_MIN = 15
 
-/* -------------------------- Responsive helper ---------------------------- */
-function useIsSmallScreen(breakpoint = 640) {
-  const [isSmall, setIsSmall] = useState(false)
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    const mql = window.matchMedia(`(max-width: ${breakpoint}px)`)
-    const onChange = (e) => setIsSmall(e.matches)
-    setIsSmall(mql.matches)
-    mql.addEventListener ? mql.addEventListener('change', onChange) : mql.addListener(onChange)
-    return () => {
-      mql.removeEventListener ? mql.removeEventListener('change', onChange) : mql.removeListener(onChange)
+function roundUpToInterval(date, intervalMinutes = INTERVAL_MIN) {
+  const d = new Date(date)
+  const ms = intervalMinutes * 60 * 1000
+  const rounded = new Date(Math.ceil(d.getTime() / ms) * ms)
+  rounded.setSeconds(0, 0)
+  return rounded
+}
+
+function addMinutes(d, minutes) {
+  return new Date(d.getTime() + minutes * 60 * 1000)
+}
+
+function toYMD(d) {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
+function to12h(d) {
+  let h = d.getHours()
+  const m = String(d.getMinutes()).padStart(2, '0')
+  const ampm = h >= 12 ? 'PM' : 'AM'
+  h = h % 12
+  if (h === 0) h = 12
+  return `${h}:${m} ${ampm}`
+}
+
+function parseTimeOption(value, baseDate) {
+  const [hh, mm] = value.split(':').map(Number)
+  const d = new Date(baseDate)
+  d.setHours(hh, mm, 0, 0)
+  return d
+}
+
+function makeTimeOptions(interval = INTERVAL_MIN) {
+  const opts = []
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += interval) {
+      const d = new Date()
+      d.setHours(h, m, 0, 0)
+      const label = to12h(d)
+      const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
+      opts.push({ label, value })
     }
-  }, [breakpoint])
-  return isSmall
-}
-
-/* --------------------------- Datepicker Header --------------------------- */
-function CustomHeader({ date, changeYear, changeMonth, onClose }) {
-  const years = useMemo(() => {
-    const y = new Date().getFullYear()
-    const arr = []
-    for (let i = y - 50; i <= y + 10; i++) arr.push(i)
-    return arr
-  }, [])
-  const months = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
-  ]
-
-  return (
-    <div className="flex items-center justify-between px-3 py-2 border-b bg-white sticky top-0">
-      <div className="flex items-center gap-2">
-        <select
-          aria-label="Month"
-          className="rounded-md border border-slate-300 text-sm px-2 py-1 bg-white"
-          value={months[date.getMonth()]}
-          onChange={(e) => changeMonth(months.indexOf(e.target.value))}
-        >
-          {months.map((m) => <option key={m} value={m}>{m}</option>)}
-        </select>
-        <select
-          aria-label="Year"
-          className="rounded-md border border-slate-300 text-sm px-2 py-1 bg-white"
-          value={date.getFullYear()}
-          onChange={(e) => changeYear(Number(e.target.value))}
-        >
-          {years.map((y) => <option key={y} value={y}>{y}</option>)}
-        </select>
-      </div>
-
-      {/* ✕ close */}
-      <button
-        type="button"
-        aria-label="Close calendar"
-        onClick={onClose}
-        className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-slate-100 text-slate-500 hover:text-slate-700 transition"
-      >
-        <CloseIcon className="w-4 h-4" />
-      </button>
-    </div>
-  )
-}
-
-/* Minimal calendar container */
-function CalendarContainerWrap({ className, children }) {
-  return <div className={`${className || ''} booking-calendar`}>{children}</div>
+  }
+  return opts
 }
 
 /* ------------------------------ Booking Widget --------------------------- */
 function BookingWidget() {
   const now = useMemo(() => new Date(), [])
-  const defaultCheckout = useMemo(() => addHours(now, 24), [now])
-  const isSmall = useIsSmallScreen(640)
+  const defaultCheckIn = useMemo(() => roundUpToInterval(addMinutes(now, 15)), [now])
+  const defaultCheckOut = useMemo(() => addMinutes(defaultCheckIn, 24 * 60), [defaultCheckIn])
 
-  const [checkIn, setCheckIn] = useState(now)
-  const [checkOut, setCheckOut] = useState(defaultCheckout)
+  const [checkInDate, setCheckInDate] = useState(defaultCheckIn)
+  const [checkOutDate, setCheckOutDate] = useState(defaultCheckOut)
+
+  const timeOptions = useMemo(() => makeTimeOptions(INTERVAL_MIN), [])
+
+  const [checkInTime, setCheckInTime] = useState(() => {
+    const hh = String(defaultCheckIn.getHours()).padStart(2, '0')
+    const mm = String(defaultCheckIn.getMinutes()).padStart(2, '0')
+    return `${hh}:${mm}`
+  })
+
+  const [checkOutTime, setCheckOutTime] = useState(() => {
+    const hh = String(defaultCheckOut.getHours()).padStart(2, '0')
+    const mm = String(defaultCheckOut.getMinutes()).padStart(2, '0')
+    return `${hh}:${mm}`
+  })
+
   const [guests, setGuests] = useState(1)
   const [name, setName] = useState('')
   const [mobile, setMobile] = useState('')
-
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
   const [savedOk, setSavedOk] = useState(false)
 
-  // Controlled open state
-  const [openCheckIn, setOpenCheckIn] = useState(false)
-  const [openCheckOut, setOpenCheckOut] = useState(false)
-
-  const handleCheckInChange = (date) => {
-    if (!date) return
-    setCheckIn(date)
-    const minCo = addHours(date, 1)
-    if (!(checkOut > minCo)) setCheckOut(minCo)
-  }
-
-  const handleCheckOutChange = (date) => {
-    if (!date) return
-    const minCo = addHours(checkIn, 1)
-    setCheckOut(date > minCo ? date : minCo)
-  }
-
-  const minCheckInDate = now
-  const minCheckoutDate = addHours(checkIn, 1)
+  const checkInDT = useMemo(() => parseTimeOption(checkInTime, checkInDate), [checkInDate, checkInTime])
+  const checkOutDT = useMemo(() => parseTimeOption(checkOutTime, checkOutDate), [checkOutDate, checkOutTime])
 
   const validate = () => {
     const e = {}
@@ -166,33 +158,17 @@ function BookingWidget() {
     return Object.keys(e).length === 0
   }
 
-  const formatDate = (d) => {
-    const year = d.getFullYear()
-    const month = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
-
-  const formatTime12h = (d) => {
-    let hours = d.getHours()
-    const minutes = String(d.getMinutes()).padStart(2, '0')
-    const ampm = hours >= 12 ? 'PM' : 'AM'
-    hours = hours % 12
-    if (hours === 0) hours = 12
-    return `${hours}:${minutes} ${ampm}`
-  }
-
   const handleBookNow = async () => {
     if (!validate()) return
     setSaving(true)
     setSavedOk(false)
     try {
       const bookingData = {
-        checkIn: { date: formatDate(checkIn), time: formatTime12h(checkIn) },
-        checkOut: { date: formatDate(checkOut), time: formatTime12h(checkOut) },
+        checkIn: { date: toYMD(checkInDT), time: to12h(checkInDT) },
+        checkOut: { date: toYMD(checkOutDT), time: to12h(checkOutDT) },
         guests,
         name,
-        mobile
+        mobile,
       }
 
       const existing = JSON.parse(localStorage.getItem('bookings') || '[]')
@@ -202,19 +178,23 @@ function BookingWidget() {
       const res = await fetch('/api/save-booking', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ booking: bookingData })
+        body: JSON.stringify({ booking: bookingData }),
       })
       if (!res.ok) throw new Error(await res.text())
 
       setSavedOk(true)
       setTimeout(() => setSavedOk(false), 2500)
+
+      const fresh = roundUpToInterval(new Date())
+      const freshOut = addMinutes(fresh, 24 * 60)
+      setCheckInDate(fresh)
+      setCheckOutDate(freshOut)
+      setCheckInTime(`${String(fresh.getHours()).padStart(2, '0')}:${String(fresh.getMinutes()).padStart(2, '0')}`)
+      setCheckOutTime(`${String(freshOut.getHours()).padStart(2, '0')}:${String(freshOut.getMinutes()).padStart(2, '0')}`)
+      setGuests(1)
       setName('')
       setMobile('')
-      setGuests(1)
       setErrors({})
-      const freshNow = new Date()
-      setCheckIn(freshNow)
-      setCheckOut(addHours(freshNow, 24))
     } catch (err) {
       console.error('Booking save failed:', err)
       alert('Sorry, could not save your booking. Please try again.')
@@ -223,125 +203,135 @@ function BookingWidget() {
     }
   }
 
-  // Time selection config
-  const desktopTimeProps = { showTimeSelect: true, timeIntervals: 15 }
-  const mobileTimeProps = { showTimeInput: true, timeInputLabel: 'Time' }
-
-  // Common DatePicker props (tiered responsive, no blocking overlay)
-  const pickerCommon = (onClose, selected, minDate, minTime, maxTime) => ({
-    dateFormat: 'yyyy-MM-dd h:mm aa',
-    popperPlacement: 'bottom-start',
-    withPortal: true,
-    portalId: 'hero-datepicker-portal',
-    shouldCloseOnScroll: true,
-    dropdownMode: 'select',
-    showMonthDropdown: false,
-    showYearDropdown: false,
-    scrollableYearDropdown: true,
-    yearDropdownItemNumber: 60,
-    calendarClassName: 'booking-calendar',
-    fixedHeight: true,
-    renderCustomHeader: (props) => <CustomHeader {...props} onClose={onClose} />,
-    minDate,
-    minTime,
-    maxTime,
-    onClickOutside: onClose,
-    onKeyDown: (e) => { if (e.key === 'Escape') onClose() },
-    calendarContainer: CalendarContainerWrap,
-  })
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
 
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 items-end">
-        {/* Check-in */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-IN</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4 items-end">
+        {/* Check-in Date */}
+        <div className="space-y-2 xl:col-span-1">
+          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Check-in Date</label>
           <DatePicker
-            selected={checkIn}
-            onChange={handleCheckInChange}
-            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
-            {...pickerCommon(
-              () => setOpenCheckIn(false),
-              checkIn,
-              minCheckInDate,
-              sameDay(checkIn, minCheckInDate) ? minCheckInDate : startOfDay(checkIn),
-              endOfDay(checkIn)
-            )}
-            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
-            placeholderText="Select date & time"
-            open={openCheckIn}
-            onInputClick={() => setOpenCheckIn(true)}
-            onCalendarOpen={() => setOpenCheckIn(true)}
-            onCalendarClose={() => setOpenCheckIn(false)}
+            selected={checkInDate}
+            onChange={(d) => d && setCheckInDate(roundUpToInterval(d))}
+            minDate={today}
+            dateFormat="yyyy-MM-dd"
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
+            placeholderText="Select date"
           />
         </div>
 
-        {/* Check-out */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">CHECK-OUT</label>
+        {/* Check-in Time */}
+        <div className="space-y-2 xl:col-span-1">
+          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Check-in Time</label>
+          <select
+            value={checkInTime}
+            onChange={(e) => setCheckInTime(e.target.value)}
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
+          >
+            {timeOptions.map((t) => (
+              <option key={`ci-${t.value}`} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Check-out Date */}
+        <div className="space-y-2 xl:col-span-1">
+          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Check-out Date</label>
           <DatePicker
-            selected={checkOut}
-            onChange={handleCheckOutChange}
-            {...(isSmall ? mobileTimeProps : desktopTimeProps)}
-            {...pickerCommon(
-              () => setOpenCheckOut(false),
-              checkOut,
-              addHours(checkIn, 1),
-              sameDay(checkOut, addHours(checkIn, 1)) ? addHours(checkIn, 1) : startOfDay(checkOut),
-              endOfDay(checkOut)
-            )}
-            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
-            placeholderText="Select date & time"
-            open={openCheckOut}
-            onInputClick={() => setOpenCheckOut(true)}
-            onCalendarOpen={() => setOpenCheckOut(true)}
-            onCalendarClose={() => setOpenCheckOut(false)}
+            selected={checkOutDate}
+            onChange={(d) => d && setCheckOutDate(roundUpToInterval(d))}
+            minDate={checkInDate}
+            dateFormat="yyyy-MM-dd"
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
+            placeholderText="Select date"
           />
+        </div>
+
+        {/* Check-out Time */}
+        <div className="space-y-2 xl:col-span-1">
+          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Check-out Time</label>
+          <select
+            value={checkOutTime}
+            onChange={(e) => setCheckOutTime(e.target.value)}
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
+          >
+            {timeOptions.map((t) => (
+              <option key={`co-${t.value}`} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
         </div>
 
         {/* Guests */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">GUESTS</label>
+        <div className="space-y-2 xl:col-span-1">
+          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Guests</label>
           <div className="flex items-center border border-slate-300 rounded-md bg-white">
-            <button onClick={() => setGuests(g => Math.max(1, g - 1))} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none" aria-label="Decrease guests">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
+            <button
+              onClick={() => setGuests((g) => Math.max(1, g - 1))}
+              className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+              aria-label="Decrease guests"
+              type="button"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
             </button>
             <span className="flex-1 text-center text-slate-900 font-medium text-sm">{guests}</span>
-            <button onClick={() => setGuests(g => g + 1)} className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none" aria-label="Increase guests">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+            <button
+              onClick={() => setGuests((g) => g + 1)}
+              className="p-3 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
+              aria-label="Increase guests"
+              type="button"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
             </button>
           </div>
         </div>
 
         {/* Name */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">NAME</label>
+        <div className="space-y-2 xl:col-span-1">
+          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Name</label>
           <input
             type="text"
             value={name}
-            onChange={(e) => { setName(e.target.value); if (errors.name) setErrors(prev => ({ ...prev, name: '' })) }}
+            onChange={(e) => {
+              setName(e.target.value)
+              if (errors.name) setErrors((prev) => ({ ...prev, name: '' }))
+            }}
             placeholder="Your Name"
-            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
+            className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
             autoComplete="name"
           />
           {errors.name && <p className="text-xs text-red-500 -mt-1">{errors.name}</p>}
         </div>
 
-        {/* Mobile + Book Now */}
-        <div className="space-y-2 lg:col-span-2">
-          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">MOBILE</label>
-          <div className="flex items-stretch gap-2">
-            <input
-              type="tel"
-              value={mobile}
-              onChange={(e) => { setMobile(e.target.value); if (errors.mobile) setErrors(prev => ({ ...prev, mobile: '' })) }}
-              placeholder="+92-3XX-XXXXXXX"
-              className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm"
-              autoComplete="tel"
-            />
-            <Button onClick={handleBookNow} disabled={saving} className="px-4 min-w-[110px] h-12">
-              {saving ? 'Saving...' : 'Book Now'}
-            </Button>
+        {/* Mobile + CTA — centered at ≥640px and again on ≥1280px (full row on xl) */}
+        <div className="space-y-2 sm:col-span-2 xl:col-span-6">
+          <label className="text-sm font-medium text-slate-600 uppercase tracking-wide">Mobile</label>
+          <div className="flex sm:justify-center xl:justify-center">
+            <div className="flex w-full sm:max-w-xl xl:max-w-2xl items-stretch gap-2">
+              <input
+                type="tel"
+                value={mobile}
+                onChange={(e) => {
+                  setMobile(e.target.value)
+                  if (errors.mobile) setErrors((prev) => ({ ...prev, mobile: '' }))
+                }}
+                placeholder="+92-3XX-XXXXXXX"
+                className="w-full p-3 border border-slate-300 rounded-md text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-[#01F5FF] focus:border-[#01F5FF] text-sm bg-white"
+                autoComplete="tel"
+              />
+              <Button onClick={handleBookNow} disabled={saving} className="px-4 min-w-[120px] h-12">
+                {saving ? 'Saving...' : 'Book Now'}
+              </Button>
+            </div>
           </div>
           {errors.mobile && <p className="text-xs text-red-500">{errors.mobile}</p>}
         </div>
@@ -349,163 +339,19 @@ function BookingWidget() {
 
       <FloatingAlert show={savedOk} onClose={() => setSavedOk(false)} />
 
-      {/* ---- Global styles: tiered responsiveness, safe interaction ---- */}
       <style jsx global>{`
-        /* Non-blocking portal to avoid interaction lock */
-        .react-datepicker__portal {
-          position: fixed;
-          inset: 0;
-          display: grid;
-          place-items: center;
-          padding: 16px;
-          z-index: 100 !important;
-          background: transparent !important;
-          pointer-events: none;
-        }
-        .react-datepicker__portal .react-datepicker { pointer-events: auto; }
-
-        /* Calendar shell */
-        .react-datepicker,
-        .booking-calendar .react-datepicker {
-          width: min(96vw, 520px);
-          max-height: calc(96svh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
-          background: #fff;
-          border-radius: 16px;
+        .react-datepicker {
+          border-radius: 12px;
           border: 1px solid #e5e7eb;
-          overflow: hidden;
-          box-shadow: 0 20px 44px rgba(2, 6, 23, 0.18);
         }
-
-        /* Remove lib arrows */
-        .react-datepicker__navigation,
-        .react-datepicker__navigation--previous,
-        .react-datepicker__navigation--next { display: none !important; }
-
-        /* Header by CustomHeader */
-        .react-datepicker__header {
-          background: #fff;
-          border-bottom: 1px solid #e5e7eb;
-          padding: 0;
-          position: sticky;
-          top: 0;
-          z-index: 2;
-        }
-        .react-datepicker__current-month { display: none; }
-
-        /* Month grid spacing */
-        .react-datepicker__month { padding: 8px 10px 12px 10px; }
-
-        /* Day labels + cells — safe sizes (no overflow on long weekday names) */
-        .react-datepicker__day-name,
-        .react-datepicker__day {
-          box-sizing: border-box;
-          margin: 0.15rem;
-          width: 2.25rem;
-          height: 2.25rem;
-          line-height: 2.25rem;
-          font-size: 0.95rem;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 8px;
-          user-select: none;
-        }
-
-        /* Tier 1: phones (<640px) — single column with time input row */
-        @media (max-width: 639px) {
-          .react-datepicker__triangle { display: none; }
-          .react-datepicker__input-time-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 14px env(safe-area-inset-bottom);
-            border-top: 1px solid #e5e7eb;
-            background: #fff;
-            position: sticky;
-            bottom: 0;
-            z-index: 1;
-          }
-          .react-datepicker-time__input {
-            width: 120px;
-            padding: 10px 12px;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 14px;
-          }
-        }
-
-        /* Tier 2: small tablets (640–899px) — compact single column, no gutters */
-        @media (min-width: 640px) and (max-width: 899px) {
-          .react-datepicker,
-          .booking-calendar .react-datepicker {
-            width: min(92vw, 520px);
-          }
-          .react-datepicker__day-name,
-          .react-datepicker__day {
-            width: 2.1rem;
-            height: 2.1rem;
-            line-height: 2.1rem;
-            font-size: 0.93rem;
-            margin: 0.12rem;
-          }
-        }
-
-        /* Tier 3: ≥900px — two-column (calendar + time list) */
-        @media (min-width: 900px) {
-          .react-datepicker {
-            display: grid;
-            grid-template-columns: 1fr 120px;
-            align-items: stretch;
-            min-height: 360px;
-          }
-          .react-datepicker__month-container {
-            border-right: 1px solid #e5e7eb;
-            min-width: 0; /* allow shrink; remove forced min widths */
-          }
-          .react-datepicker__time-container {
-            width: 120px;
-            background: #fff;
-          }
-          .react-datepicker__time,
-          .react-datepicker__time-box {
-            width: 120px;
-            max-height: 320px;
-          }
-          .react-datepicker__time-list { scrollbar-width: thin; }
-          .react-datepicker__time-list-item--selected {
-            background: #01F5FF !important;
-            color: #0f172a !important;
-            border-radius: 6px;
-          }
-        }
-
-        /* Tier 4: ≥1200px — a bit wider time column */
-        @media (min-width: 1200px) {
-          .react-datepicker {
-            grid-template-columns: 1fr 136px;
-          }
-          .react-datepicker__time-container,
-          .react-datepicker__time,
-          .react-datepicker__time-box { width: 136px; }
-        }
-
-        /* Fine tune for very large displays */
-        @media (min-width: 1400px) {
-          .react-datepicker__day-name,
-          .react-datepicker__day {
-            width: 2.2rem;
-            height: 2.2rem;
-            line-height: 2.2rem;
-            font-size: 0.95rem;
-          }
-        }
-
         .react-datepicker__day--selected,
         .react-datepicker__day--keyboard-selected {
-          background: #01F5FF !important;
+          background: #01f5ff !important;
           color: #0f172a !important;
         }
-        .react-datepicker__day:hover { background: #e6fafe; }
+        .react-datepicker__day:hover {
+          background: #e6fafe;
+        }
       `}</style>
     </>
   )
@@ -531,13 +377,21 @@ function HeroSlider() {
       {slides.map((slide, index) => (
         <div
           key={index}
-          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${index === currentSlide
-            ? 'opacity-100 translate-x-0'
-            : index === (currentSlide - 1 + slides.length) % slides.length
+          className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
+            index === currentSlide
+              ? 'opacity-100 translate-x-0'
+              : index === (currentSlide - 1 + slides.length) % slides.length
               ? 'opacity-0 -translate-x-full'
-              : 'opacity-0 translate-x-full'}`}
+              : 'opacity-0 translate-x-full'
+          }`}
         >
-          <Image src={slide.image || "/placeholder.svg"} alt={slide.alt} fill className="object-cover" priority={index === 0} />
+          <Image
+            src={slide.image || '/placeholder.svg'}
+            alt={slide.alt}
+            fill
+            className="object-cover"
+            priority={index === 0}
+          />
         </div>
       ))}
 
@@ -548,7 +402,9 @@ function HeroSlider() {
           <button
             key={index}
             onClick={() => setCurrentSlide(index)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${index === currentSlide ? 'bg-[#01F5FF] scale-110' : 'bg-white/50 hover:bg-white/70'}`}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              index === currentSlide ? 'bg-[#01F5FF] scale-110' : 'bg-white/50 hover:bg-white/70'
+            }`}
           />
         ))}
       </div>
@@ -567,10 +423,13 @@ export default function HeroSection() {
   }
 
   return (
-    <section id="home" className={`${mulish.className} relative min-h-screen flex flex-col justify-center overflow-hidden pt-32 sm:pt-36 md:pt-40 pb-8`}>
+    <section
+      id="home"
+      className={`${mulish.className} relative min-h-screen flex flex-col justify-center overflow-hidden pt-32 sm:pt-36 md:pt-40 pb-8`}
+    >
       <HeroSlider />
 
-      <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 flex-1 flex flex-col justify-center">
+      <div className="relative z-10 text-center text-white max-w-6xl mx-auto px-4 flex-1 flex flex-col justify-center">
         <div className="space-y-6 sm:space-y-8 mb-8">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight font-bold animate-fade-in-up">
             Rooms & Apartment for rent in B-17
@@ -578,7 +437,7 @@ export default function HeroSection() {
 
           <div className="w-24 h-0.5 bg-[#01F5FF] mx-auto animate-fade-in-up animation-delay-200"></div>
           <p className="text-lg sm:text-xl md:text-2xl text-slate-200 max-w-2xl mx-auto px-4 leading-relaxed animate-fade-in-up animation-delay-400">
-            Discover premium rentals in Islamabad - from luxury apartments to comfortable homes in B-17 & D-17 Islamabad
+            Discover premium rentals in Islamabad — from luxury apartments to comfortable homes in B-17 & D-17 Islamabad
           </p>
           <button
             onClick={() => scrollToSection('properties')}
@@ -589,7 +448,7 @@ export default function HeroSection() {
         </div>
 
         <div className="mt-8 sm:mt-12 animate-fade-in-up animation-delay-800 relative z-50">
-          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl p-4 sm:p-6 max-w-6xl mx-auto">
+          <div className="bg-white/95 backdrop-blur-sm rounded-lg shadow-2xl p-4 sm:p-6 max-w-7xl mx-auto">
             <BookingWidget />
           </div>
         </div>

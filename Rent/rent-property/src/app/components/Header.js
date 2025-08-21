@@ -230,7 +230,7 @@ export default function Header() {
               >
                 <Image
                   src="/logo.png"
-                  alt="Rents Inn"
+                  alt="Rentsinn"
                   width={140}
                   height={40}
                   className="h-10 w-auto"
@@ -268,7 +268,7 @@ export default function Header() {
             >
               <Image
                 src="/logo.png"
-                alt="Rents Inn"
+                alt="Rentsinn"
                 width={120}
                 height={36}
                 className="h-9 w-auto"

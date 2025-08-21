@@ -25,10 +25,10 @@ export default function Footer() {
           {/* Brand Info */}
           <div>
             <div className="flex items-center space-x-3 mb-4 lg:mb-6">
-              <a href="/" aria-label="Rents Inn Home" className="inline-flex items-center">
+              <a href="/" aria-label="Rentsinn Home" className="inline-flex items-center">
                 <Image
                   src="/logo.png"
-                  alt="Rents Inn logo"
+                  alt="Rentsinn logo"
                   width={180}
                   height={56}
                   priority
@@ -52,7 +52,7 @@ export default function Footer() {
                 <FaFacebookF className="w-5 h-5 text-slate-400 hover:text-[#01F5FF] cursor-pointer transition-colors" />
               </a>
               <a
-                href="https://www.instagram.com/rentsinn05/"
+                href="https://www.instagram.com/Rentsinn05/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
@@ -68,7 +68,7 @@ export default function Footer() {
                 <FaYoutube className="w-5 h-5 text-slate-400 hover:text-[#01F5FF] cursor-pointer transition-colors" />
               </a>
               <a
-                href="https://www.tiktok.com/@rentsinn5?_t=ZS-8yyM6u6kwqH&_r=1"
+                href="https://www.tiktok.com/@Rentsinn5?_t=ZS-8yyM6u6kwqH&_r=1"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="TikTok"
@@ -136,10 +136,10 @@ export default function Footer() {
               <div className="flex items-center space-x-3">
                 <Mail className="w-5 h-5 text-[#01F5FF] flex-shrink-0" />
                 <a
-                  href="mailto:support@rentsinn.com"
+                  href="mailto:support@Rentsinn.com"
                   className="text-slate-400 text-sm sm:text-base hover:text-[#01F5FF]"
                 >
-                  support@rentsinn.com
+                  support@Rentsinn.com
                 </a>
               </div>
             </div>
@@ -150,7 +150,7 @@ export default function Footer() {
         <div className="border-t border-slate-800 pt-6 lg:pt-8">
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <p className="text-slate-400 text-sm text-center">
-              © {new Date().getFullYear()} Rentsin. All rights reserved.
+              © {new Date().getFullYear()} Rentsinn. All rights reserved.
             </p>
           </div>
         </div>

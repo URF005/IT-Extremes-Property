@@ -17,14 +17,30 @@ export default function AboutSection() {
           {/* Text */}
           <div className="flex-1 space-y-6 sm:space-y-8">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
-              About <span className="text-[#01F5FF]">Rentsin</span>
+              About <span className="text-[#01F5FF]">Rentsinn</span>
             </h2>
-            
-            <p className="text-slate-300 text-base md:text-lg leading-relaxed">
-              At Rentsin, we offer clean, comfortable, and stylish apartments for rent in B-17 and
-              D-17, Islamabad. Our homes are fully furnished and ready for you to enjoy — whether
-              for a short stay or a long one.
-            </p>
+
+            <div className="text-slate-300 text-base md:text-lg leading-relaxed space-y-6">
+              <p>
+                At <span className="font-semibold text-white">Rentsinn</span>, we provide clean,
+                comfortable, and stylish <span className="text-white">rooms</span> and
+                <span className="text-white"> apartments</span> for rent in
+                <span className="text-white"> B-17</span> and <span className="text-white">D-17</span>, Islamabad.
+                Our spaces are fully furnished and move-in ready — ideal for both short-term stays and long-term living.
+              </p>
+
+              <p>
+                We have successfully rented out <span className="text-white">rooms</span> and
+                <span className="text-white"> apartments</span> in
+                <span className="text-white"> City Center D-17</span> and
+                <span className="text-white"> Capital Square B-17</span>, earning the trust of clients who value
+                quality, convenience, and a secure community. With growing demand in these prime sectors,
+                <span className="font-semibold text-white"> Rentsinn</span> continues to connect residents
+                with properties that fit their lifestyle and budget.
+              </p>
+
+            </div>
+
           </div>
 
           {/* Single Smaller Responsive Image */}
@@ -32,7 +48,7 @@ export default function AboutSection() {
             <div className="rounded-2xl overflow-hidden shadow-xl">
               <Image
                 src="/img5.jpeg"
-                alt="Rents Inn Apartment"
+                alt="Rentsinn Apartment"
                 width={400}
                 height={600}
                 className="w-[200px] sm:w-[240px] md:w-[280px] lg:w-[320px] h-auto object-cover"
